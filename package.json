@@ -1,0 +1,37 @@
+{
+  "name": "@openally/common",
+  "version": "1.0.0",
+  "description": "Common Orgs Monorepo",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "scripts": {
+    "build": "tsc -b"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OpenAlly/common.git"
+  },
+  "keywords": [],
+  "author": "GENTILHOMME Thomas <gentilhomme.thomas@gmail.com>",
+  "workspaces": [
+    "src/timestore"
+  ],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/OpenAlly/common/issues"
+  },
+  "homepage": "https://github.com/OpenAlly/common#readme",
+  "devDependencies": {
+    "@nodesecure/eslint-config": "^1.5.0",
+    "@types/chai": "^4.3.3",
+    "@types/mocha": "^10.0.0",
+    "@types/node": "^18.11.0",
+    "c8": "^7.12.0",
+    "chai": "^4.3.6",
+    "cross-env": "^7.0.3",
+    "mocha": "^10.0.0",
+    "ts-node": "^10.9.1",
+    "typescript": "^4.8.4"
+  }
+}
