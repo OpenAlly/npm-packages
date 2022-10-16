@@ -8,12 +8,13 @@ const kUniqueNullValue = Symbol("UniqueNullValue");
 
 export interface ITimeStoreConstructorOptions {
   /**
-   * Time To Live
+   * Time To Live (Lifetime of stored identifiers).
    */
   ttl: number;
   /**
-   * Automatically expire key when Node.js process "exit" event is triggered.
+   * Automatically expire identifiers when Node.js process "exit" event is triggered.
    *
+   * @see https://nodejs.org/api/process.html#event-exit
    * @default false
    */
   expireIdentifiersOnProcessExit?: boolean;
@@ -21,6 +22,14 @@ export interface ITimeStoreConstructorOptions {
    * Provide an additional EventEmitter to use for broadcasting events
    */
   eventEmitter?: EventEmitter;
+}
+
+export interface ITimeStoreAddOptions {
+  /**
+   * Time To Live.
+   * If no value provided it will take the class TTL value.
+   */
+  ttl?: number;
 }
 
 export type TimeStoreIdentifier = string | symbol | number | boolean | bigint | object | null;
@@ -60,7 +69,12 @@ export class TimeStore extends EventEmitter {
     return this.#ttl;
   }
 
-  add(identifier: TimeStoreIdentifier, ttl = this.#ttl) {
+  add(
+    identifier: TimeStoreIdentifier,
+    options: ITimeStoreAddOptions = {}
+  ) {
+    const { ttl = this.#ttl } = options;
+
     const hasIdentifier = this.#identifiers.has(identifier);
     const timestamp = Date.now();
 
@@ -100,9 +114,6 @@ export class TimeStore extends EventEmitter {
   }
 
   #hasTTLUnderCurrentIdentifier(now: number, ttl: number) {
-    if (this.#current.identifier === kUniqueNullValue) {
-      return false;
-    }
     const delta = now - this.#identifiers.get(this.#current.identifier)!.timestamp;
 
     return this.#current.ttl - delta >= ttl;
