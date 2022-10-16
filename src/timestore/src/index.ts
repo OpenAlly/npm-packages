@@ -22,11 +22,19 @@ export interface ITimeStoreConstructorOptions {
    * Provide an additional EventEmitter to use for broadcasting events
    */
   eventEmitter?: EventEmitter;
+
+  /**
+   * If enabled the internal timer will not be unreferenced
+   *
+   * @see https://nodejs.org/dist/latest-v18.x/docs/api/timers.html#timeoutunref
+   * @default false
+   */
+  keepEventLoopAlive?: boolean;
 }
 
 export interface ITimeStoreAddOptions {
   /**
-   * Time To Live.
+   * Time To Live for the given identifier.
    * If no value provided it will take the class TTL value.
    */
   ttl?: number;
@@ -42,6 +50,7 @@ export class TimeStore extends EventEmitter {
   static Expired = Symbol.for("ExpiredTimeStoreEntry");
   static Renewed = Symbol.for("RenewedTimeStoreEntry");
 
+  #keepEventLoopAlive: boolean;
   #identifiers: Map<TimeStoreIdentifier, TimeStoreValue> = new Map();
   #ttl: number;
   #current: { identifier: TimeStoreIdentifier, ttl: number } = { identifier: kUniqueNullValue, ttl: 0 };
@@ -50,10 +59,16 @@ export class TimeStore extends EventEmitter {
 
   constructor(options: ITimeStoreConstructorOptions) {
     super();
-    const { ttl, expireIdentifiersOnProcessExit = false, eventEmitter = null } = options;
+    const {
+      ttl,
+      expireIdentifiersOnProcessExit = false,
+      keepEventLoopAlive = false,
+      eventEmitter = null
+    } = options;
 
     this.#ttl = ttl;
     this.#customEventEmitter = eventEmitter;
+    this.#keepEventLoopAlive = keepEventLoopAlive;
 
     process.on("exit", () => {
       if (expireIdentifiersOnProcessExit) {
@@ -162,7 +177,8 @@ export class TimeStore extends EventEmitter {
       this.#customEventEmitter?.emit(TimeStore.Expired, identifier);
     }, ttl);
 
-    // !DO NOT REMOVE! Important to allow the event loop to exit.
-    this.#timer.unref();
+    if (!this.#keepEventLoopAlive) {
+      this.#timer.unref();
+    }
   }
 }
