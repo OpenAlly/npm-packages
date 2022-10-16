@@ -1,3 +1,7 @@
+<p align="center">
+<img width="500" src="https://user-images.githubusercontent.com/4438263/196032102-1d43ad83-48ac-4cd3-82ca-3fd197313430.png" alt="openally">
+</p>
+
 <p align="center"><h1 align="center">
   NPM Packages
 </h1>
