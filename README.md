@@ -1,5 +1,10 @@
-# common
-Monorepo for OpenAlly NPM packages.
+<p align="center"><h1 align="center">
+  NPM Packages
+</h1>
+
+<p align="center">
+  OpenAlly monorepo to store common organization npm packages
+</p>
 
 ## Requirements
 - [Node.js](https://nodejs.org/en/) version 16 or higher
