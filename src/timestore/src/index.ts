@@ -3,144 +3,155 @@
 // Import Node.js Dependencies
 import { EventEmitter } from "node:events";
 
+// CONSTANTS
+const kUniqueNullValue = Symbol("UniqueNullValue");
+
 export interface ITimeStoreConstructorOptions {
   /**
    * Time To Live
    */
   ttl: number;
+  /**
+   * Automatically expire key when Node.js process "exit" event is triggered.
+   *
+   * @default false
+   */
+  expireIdentifiersOnProcessExit?: boolean;
+  /**
+   * Provide an additional EventEmitter to use for broadcasting events
+   */
+  eventEmitter?: EventEmitter;
 }
 
 export type TimeStoreIdentifier = string | symbol | number | boolean | bigint | object | null;
-export type TimeStoreTimestamp = number;
-
-// CONSTANTS
-const kLocalWeakTimeStore = new WeakMap<TimeStore, Map<TimeStoreIdentifier, TimeStoreTimestamp>>();
-
-const kUniqueNullValue = Symbol("UniqueNullValue");
-const kSymbolTimer = Symbol("TimeStoreTimer");
-const kSymbolIdentifier = Symbol("TimeStoreIdentifier");
-const kSymbolTTL = Symbol("TimeStoreTTL");
+export type TimeStoreValue = {
+  timestamp: number;
+  ttl: number;
+};
 
 export class TimeStore extends EventEmitter {
   static Expired = Symbol.for("ExpiredTimeStoreEntry");
+  static Renewed = Symbol.for("RenewedTimeStoreEntry");
+
+  #identifiers: Map<TimeStoreIdentifier, TimeStoreValue> = new Map();
+  #ttl: number;
+  #current: { identifier: TimeStoreIdentifier, ttl: number } = { identifier: kUniqueNullValue, ttl: 0 };
+  #timer: NodeJS.Timeout | null = null;
+  #customEventEmitter: EventEmitter | null = null;
 
   constructor(options: ITimeStoreConstructorOptions) {
     super();
+    const { ttl, expireIdentifiersOnProcessExit = false, eventEmitter = null } = options;
 
-    kLocalWeakTimeStore.set(this, new Map());
-    Object.defineProperty(this, kSymbolTimer, {
-      writable: true,
-      value: null
-    });
-    Object.defineProperty(this, kSymbolIdentifier, {
-      writable: true,
-      value: null
-    });
-    Object.defineProperty(this, kSymbolTTL, { value: options.ttl });
+    this.#ttl = ttl;
+    this.#customEventEmitter = eventEmitter;
 
     process.on("exit", () => {
-      const curr = kLocalWeakTimeStore.get(this)!;
-
-      for (const identifier of curr.keys()) {
-        this.emit(TimeStore.Expired, identifier);
+      if (expireIdentifiersOnProcessExit) {
+        for (const identifier of this.#identifiers.keys()) {
+          this.emit(TimeStore.Expired, identifier);
+        }
       }
       this.clear();
     });
   }
 
-  #clearTimeout() {
-    if (this[kSymbolTimer] !== null) {
-      clearTimeout(this[kSymbolTimer]);
-      this[kSymbolTimer] = null;
-    }
+  get ttl() {
+    return this.#ttl;
   }
 
-  protected add(identifier: TimeStoreIdentifier) {
-    const curr = kLocalWeakTimeStore.get(this)!;
-    const ts = Date.now();
+  add(identifier: TimeStoreIdentifier, ttl = this.#ttl) {
+    const hasIdentifier = this.#identifiers.has(identifier);
+    const timestamp = Date.now();
 
-    const isCurrentIdentifier = this[kSymbolIdentifier] === identifier;
-    if (isCurrentIdentifier || this[kSymbolTimer] === null) {
-      if (isCurrentIdentifier && this[kSymbolTimer] !== null) {
-        clearTimeout(this[kSymbolTimer]);
-      }
-      else {
-        this[kSymbolIdentifier] = identifier;
-      }
-
-      this[kSymbolTimer] = setTimeout(() => {
-        this.emit(TimeStore.Expired, identifier);
-      }, this[kSymbolTTL]).unref();
+    this.#identifiers.set(identifier, { timestamp, ttl });
+    if (hasIdentifier) {
+      this.emit(TimeStore.Renewed, identifier);
+      this.#customEventEmitter?.emit(TimeStore.Renewed, identifier);
     }
 
-    curr.set(identifier, ts);
-  }
-
-  protected delete(identifier: TimeStoreIdentifier) {
-    const curr = kLocalWeakTimeStore.get(this)!;
-
-    curr.delete(identifier);
-    if (this[kSymbolIdentifier] === identifier) {
-      this.#clearTimeout();
-      if (curr.size > 0) {
-        updateTimeStoreInterval(this);
-      }
-      else {
-        this[kSymbolIdentifier] = kUniqueNullValue;
-      }
+    if (this.#timer === null) {
+      this.#setNewUpfrontIdentifier(identifier, ttl);
     }
+    else if (
+      this.#current.identifier === identifier ||
+      this.#hasTTLUnderCurrentIdentifier(timestamp, ttl)
+    ) {
+      this.#updateTimeStoreInterval();
+    }
+
+    return this;
   }
 
-  protected refresh(identifier: TimeStoreIdentifier) {
-    const curr = kLocalWeakTimeStore.get(this)!;
-    if (!curr.has(identifier)) {
+  delete(identifier: TimeStoreIdentifier) {
+    this.#identifiers.delete(identifier);
+    if (this.#current.identifier === identifier) {
+      this.#updateTimeStoreInterval();
+    }
+
+    return this;
+  }
+
+  clear() {
+    this.#resetTimerAndCurrentIdentifier();
+    this.#identifiers.clear();
+
+    return this;
+  }
+
+  #hasTTLUnderCurrentIdentifier(now: number, ttl: number) {
+    if (this.#current.identifier === kUniqueNullValue) {
+      return false;
+    }
+    const delta = now - this.#identifiers.get(this.#current.identifier)!.timestamp;
+
+    return this.#current.ttl - delta >= ttl;
+  }
+
+  #updateTimeStoreInterval(): void {
+    this.#resetTimerAndCurrentIdentifier();
+    if (this.#identifiers.size === 0) {
       return;
     }
 
-    curr.set(identifier, Date.now());
-    if (this[kSymbolIdentifier] === identifier) {
-      this.#clearTimeout();
-      updateTimeStoreInterval(this);
+    // Sort identifiers by their timestamp
+    const sortedIdentifiers = [...this.#identifiers.entries()]
+      .sort((left, right) => (right[1].timestamp + right[1].ttl) - (left[1].timestamp + left[1].ttl));
+
+    while (sortedIdentifiers.length > 0) {
+      const [identifier, value] = sortedIdentifiers.pop()!;
+      const delta = Date.now() - value.timestamp;
+
+      // If current key is expired
+      if (delta >= value.ttl) {
+        this.emit(TimeStore.Expired, identifier);
+      }
+      else {
+        this.#setNewUpfrontIdentifier(identifier, value.ttl - delta);
+        break;
+      }
     }
   }
 
-  protected clear() {
-    this.#clearTimeout();
-    this[kSymbolIdentifier] = kUniqueNullValue;
-    kLocalWeakTimeStore.get(this)!.clear();
-  }
-}
-
-function updateTimeStoreInterval(timestore: TimeStore): void {
-  const curr = kLocalWeakTimeStore.get(timestore)!;
-
-  timestore[kSymbolTimer] = null;
-  timestore[kSymbolIdentifier] = kUniqueNullValue;
-
-  if (curr.size === 0) {
-    return;
-  }
-
-  // Sort elements by timestamp
-  const sortedElements = [...curr.entries()].sort((left, right) => right[1] - left[1]);
-
-  while (sortedElements.length > 0) {
-    const [identifier, timestamp] = sortedElements.pop()!;
-    const delta = Date.now() - timestamp;
-
-    // If current key is expired
-    if (delta >= timestore[kSymbolTTL]) {
-      timestore.emit(TimeStore.Expired, identifier);
-      continue;
+  #resetTimerAndCurrentIdentifier() {
+    if (this.#timer !== null) {
+      clearTimeout(this.#timer);
+      this.#timer = null;
     }
 
-    // Schedule a new timer
-    const timeOutMs = timestore[kSymbolTTL] - delta;
+    // Note: we use a Symbol() to avoid collisions with primitives like null
+    this.#current = { identifier: kUniqueNullValue, ttl: 0 };
+  }
 
-    timestore[kSymbolIdentifier] = identifier;
-    timestore[kSymbolTimer] = setTimeout(() => {
-      timestore.emit(TimeStore.Expired, identifier);
-    }, timeOutMs).unref();
-    break;
+  #setNewUpfrontIdentifier(identifier: TimeStoreIdentifier, ttl = this.#ttl) {
+    this.#current = { identifier, ttl };
+    this.#timer = setTimeout(() => {
+      this.delete(identifier);
+      this.emit(TimeStore.Expired, identifier);
+      this.#customEventEmitter?.emit(TimeStore.Expired, identifier);
+    }, ttl);
+
+    // !DO NOT REMOVE! Important to allow the event loop to exit.
+    this.#timer.unref();
   }
 }
