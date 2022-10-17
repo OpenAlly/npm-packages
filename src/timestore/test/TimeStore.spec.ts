@@ -123,8 +123,7 @@ describe("TimeStore", () => {
     });
 
     it("should Expire identifiers with mixed custom/default TTL", async() => {
-      const [firstId, secondId, thirdId] = [
-        faker.random.alpha(10),
+      const [firstId, secondId] = [
         faker.random.alpha(10),
         faker.random.alpha(10)
       ];
@@ -135,21 +134,19 @@ describe("TimeStore", () => {
 
       store
         .add(secondId)
-        .add(thirdId)
         .add(firstId, { ttl: 200 });
 
       await timers.setTimeout(utils.safeTTL(200));
       expect(counter.count).to.equal(1);
 
       await timers.setTimeout(1000);
-      expect(counter.count).to.equal(3);
+      expect(counter.count).to.equal(2);
 
       const { isMatching } = new IteratorMatcher()
         .expect(firstId)
         .expect(secondId)
-        .expect(thirdId)
         .execute(counter.identifiers(), { allowNoMatchingValues: false });
-      expect(isMatching).to.equal(true);
+      expect(isMatching).to.equal(true, "identifiers must be in the right order");
     });
 
     it("should Renew a given identifier before it expire and then reset it's internal TTL", async() => {
