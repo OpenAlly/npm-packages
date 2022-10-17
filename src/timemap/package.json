@@ -1,7 +1,7 @@
 {
-  "name": "@openally/timestore",
+  "name": "@openally/timemap",
   "version": "1.0.0",
-  "description": "An abstract class designed to manage the Time To Live (TTL) of a given list of identifiers.",
+  "description": "TBC",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -15,12 +15,7 @@
   "files": [
     "dist"
   ],
-  "keywords": [
-    "time",
-    "store",
-    "timer",
-    "timeout"
-  ],
+  "keywords": [],
   "author": "GENTILHOMME Thomas <gentilhomme.thomas@gmail.com>",
   "license": "MIT",
   "devDependencies": {

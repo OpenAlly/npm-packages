@@ -41,7 +41,8 @@ export interface ITimeStoreAddOptions {
 }
 
 export type TimeStoreIdentifier = string | symbol | number | boolean | bigint | object | null;
-export type TimeStoreValue = {
+
+type InternalTimeStoreMapValue = {
   timestamp: number;
   ttl: number;
 };
@@ -51,7 +52,7 @@ export class TimeStore extends EventEmitter {
   static Renewed = Symbol.for("RenewedTimeStoreEntry");
 
   #keepEventLoopAlive: boolean;
-  #identifiers: Map<TimeStoreIdentifier, TimeStoreValue> = new Map();
+  #identifiers: Map<TimeStoreIdentifier, InternalTimeStoreMapValue> = new Map();
   #ttl: number;
   #current: { identifier: TimeStoreIdentifier, ttl: number } = { identifier: kUniqueNullValue, ttl: 0 };
   #timer: NodeJS.Timeout | null = null;
@@ -182,3 +183,5 @@ export class TimeStore extends EventEmitter {
     }
   }
 }
+
+export { createTimeStoreValue } from "./TimeValue";
