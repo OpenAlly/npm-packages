@@ -10,7 +10,6 @@
 
 ## Requirements
 - [Node.js](https://nodejs.org/en/) v16 or higher
-- EcmaScript Modules (using `types: "modules"`)
 
 ## Getting Started
 
