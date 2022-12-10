@@ -3,6 +3,9 @@
 // Import Node.js Dependencies
 import { EventEmitter } from "node:events";
 
+// Import Internal Dependencies
+import { tSv, tSvIdentifier, tSvResponse, TSV_SYMBOL } from "./TimeValue";
+
 // CONSTANTS
 const kUniqueNullValue = Symbol("UniqueNullValue");
 
@@ -83,6 +86,15 @@ export class TimeStore extends EventEmitter {
 
   get ttl() {
     return this.#ttl;
+  }
+
+  addTsv(data: tSvResponse) {
+    if (!data[TSV_SYMBOL]) {
+      return this;
+    }
+    const { value, ttl } = data;
+
+    return this.add(value, { ttl });
   }
 
   add(
@@ -184,4 +196,4 @@ export class TimeStore extends EventEmitter {
   }
 }
 
-export { createTimeStoreValue } from "./TimeValue";
+export { tSv, tSvIdentifier, tSvResponse, TSV_SYMBOL };

@@ -11,7 +11,7 @@ import { IteratorMatcher } from "iterator-matcher";
 import * as sinon from "sinon";
 
 // Import Internal Dependencies
-import { TimeStore } from "../src/index";
+import { TimeStore, tSv } from "../src/index";
 import * as utils from "./utils";
 
 describe("TimeStore", () => {
@@ -173,6 +173,30 @@ describe("TimeStore", () => {
         .expect(TimeStore.Expired)
         .execute(counter.events(), { allowNoMatchingValues: false });
       expect(isMatching).to.equal(true);
+    });
+  });
+
+  describe("addTsv", () => {
+    it("should Expire one identifier after the given default TTL class time", async() => {
+      const ttl = 100;
+      const firedIdentifier = tSv({ ttl })(faker.random.alpha(10));
+
+      const store = new TimeStore({ ttl });
+      const counter = new utils.EventEmitterCounter(store, TimeStore.Expired);
+
+      setImmediate(() => store.addTsv(firedIdentifier));
+      await timers.setTimeout(utils.safeTTL(ttl));
+
+      expect(counter.count).to.equal(1);
+    });
+
+    it("should return the instance of the class as a response (A.K.A this)", () => {
+      const store = new TimeStore({ ttl: 100 });
+
+      const storeBis = store.addTsv(tSv()("foo"));
+      store.clear();
+
+      expect(store).to.equal(storeBis);
     });
   });
 

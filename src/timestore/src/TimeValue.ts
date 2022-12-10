@@ -1,14 +1,24 @@
 // Import Internal Dependencies
-import { TimeStoreIdentifier } from "./index";
+import { TimeStoreIdentifier, ITimeStoreAddOptions } from "./index";
 
 // CONSTANTS
-const kTimeStoreValueSymbol = Symbol.for("TimeStoreValueUniqueRef");
+export const TSV_SYMBOL = Symbol.for("TimeStoreValue");
 
-export function createTimeStoreValue(
-  value: TimeStoreIdentifier | [TimeStoreIdentifier, any],
-  ttl?: number
+export type tSvIdentifier<T = any> = TimeStoreIdentifier | [TimeStoreIdentifier, T];
+export type tSvResponse<T = any> = {
+  value: tSvIdentifier<T>;
+  ttl: number | undefined;
+  [TSV_SYMBOL]: boolean;
+}
+
+export function tSv<T = any>(
+  options: ITimeStoreAddOptions = {}
 ) {
-  return {
-    value, ttl, [kTimeStoreValueSymbol]: true
+  const { ttl } = options;
+
+  return (value: tSvIdentifier<T>): tSvResponse<T> => {
+    return {
+      value, ttl, [TSV_SYMBOL]: true
+    };
   };
 }

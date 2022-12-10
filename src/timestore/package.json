@@ -2,6 +2,7 @@
   "name": "@openally/timestore",
   "version": "1.0.0",
   "description": "An abstract class designed to manage the Time To Live (TTL) of a given list of identifiers.",
+  "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
