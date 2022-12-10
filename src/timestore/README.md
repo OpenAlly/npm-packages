@@ -95,6 +95,23 @@ interface ITimeStoreAddOptions {
 
 > **Note** Adding an existing ID will reset its previous TTL/timestamp
 
+### addTsv(data: tSvResponse): this
+Add a value using a TimeStoreValue:
+
+```ts
+import { TimeStore, tSv } from "@openally/timestore";
+
+const tSvFactory = tSv({ ttl: 500 });
+
+const store = new TimeStore({ ttl: 10_000 })
+  .addTsv(tSvFactory("key"))
+  .addTsv(tSvFactory(["key", "value"])); // value will be ignored here
+```
+
+TimeStoreValue are useful to build higher abstraction using TimeStore. Those values all embed a Global symbol `Symbol.for("TimeStoreValue")`.
+
+The module also export it as `TSV_SYMBOL`.
+
 ### delete(identifier: TimeStoreIdentifier): this
 Remove a given identifier from the store.
 
