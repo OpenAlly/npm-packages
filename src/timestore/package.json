@@ -2,7 +2,6 @@
   "name": "@openally/timestore",
   "version": "1.1.0",
   "description": "An abstract class designed to manage the Time To Live (TTL) of a given list of identifiers.",
-  "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
@@ -34,7 +33,7 @@
   "devDependencies": {
     "@faker-js/faker": "^7.6.0",
     "@types/sinon": "^10.0.13",
-    "iterator-matcher": "^1.0.1",
+    "iterator-matcher": "^2.0.0",
     "sinon": "^14.0.1",
     "tsup": "^6.5.0"
   }
