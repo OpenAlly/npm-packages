@@ -1,12 +1,19 @@
 {
   "name": "@openally/timemap",
   "version": "1.0.0",
-  "description": "TBC",
-  "type": "module",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "description": "ES6 Map-Like implementation with keys that have a defined timelife",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./dist/index.js",
+      "import": "./dist/index.mjs",
+      "types": "./dist/index.d.ts"
+    }
+  },
   "scripts": {
-    "build": "tsc -b",
+    "build": "tsup src/index.ts --format cjs,esm --dts --clean",
     "prepublishOnly": "npm run build",
     "test": "mocha --parallel",
     "coverage": "c8 -r html npm test",
@@ -23,5 +30,8 @@
     "@types/sinon": "^10.0.13",
     "iterator-matcher": "^1.0.1",
     "sinon": "^14.0.1"
+  },
+  "dependencies": {
+    "@openally/timestore": "^1.1.0"
   }
 }
