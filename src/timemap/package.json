@@ -25,13 +25,7 @@
   "keywords": [],
   "author": "GENTILHOMME Thomas <gentilhomme.thomas@gmail.com>",
   "license": "MIT",
-  "devDependencies": {
-    "@faker-js/faker": "^7.6.0",
-    "@types/sinon": "^10.0.13",
-    "iterator-matcher": "^1.0.1",
-    "sinon": "^14.0.1"
-  },
   "dependencies": {
-    "@openally/timestore": "^1.1.0"
+    "@openally/timestore": "^1.2.0"
   }
 }

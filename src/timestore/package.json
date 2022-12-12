@@ -32,8 +32,6 @@
   "license": "MIT",
   "devDependencies": {
     "@faker-js/faker": "^7.6.0",
-    "@types/sinon": "^10.0.13",
-    "iterator-matcher": "^2.0.0",
-    "sinon": "^14.0.1"
+    "iterator-matcher": "^2.0.0"
   }
 }
