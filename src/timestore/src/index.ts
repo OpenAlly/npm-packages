@@ -4,7 +4,7 @@
 import { EventEmitter } from "node:events";
 
 // Import Internal Dependencies
-import { tSv, tSvIdentifier, tSvResponse, TSV_SYMBOL } from "./TimeValue";
+import { tSv, tSvResponse, TSV_SYMBOL } from "./TimeValue";
 
 // CONSTANTS
 const kUniqueNullValue = Symbol("UniqueNullValue");
@@ -196,4 +196,4 @@ export class TimeStore extends EventEmitter {
   }
 }
 
-export { tSv, tSvIdentifier, tSvResponse, TSV_SYMBOL };
+export { tSv, tSvResponse, TSV_SYMBOL };
