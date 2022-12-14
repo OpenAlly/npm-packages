@@ -1,9 +1,9 @@
 <p align="center"><h1 align="center">
-  TimeMap
+  Mutex
 </h1>
 
 <p align="center">
-  ES6 Map-Like implementation with keys that have a defined timelife
+  Another Mutex/Semaphore implementation with first-class support of AbortSignal
 </p>
 
 ## Requirements
@@ -14,15 +14,15 @@
 This package is available in the Node Package Repository and can be easily installed with [npm](https://docs.npmjs.com/getting-started/what-is-npm) or [yarn](https://yarnpkg.com).
 
 ```bash
-$ npm i @openally/timemap
+$ npm i @openally/mutex
 # or
-$ yarn add @openally/timemap
+$ yarn add @openally/mutex
 ```
 
 ## Usage example
 
 ```ts
-import TimeMap from "@openally/timemap";
+import Mutex from "@openally/mutex";
 ```
 
 ## API
