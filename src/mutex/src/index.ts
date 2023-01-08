@@ -147,7 +147,7 @@ export class Mutex extends EventEmitter {
 
   private releaseID(id: string) {
     const index = this.#waitings.findIndex((value) => value[2] === id);
-    if (typeof index === "undefined") {
+    if (index === -1) {
       return;
     }
 
@@ -155,7 +155,9 @@ export class Mutex extends EventEmitter {
     reject(new MutexCanceledError("AbortSignal"));
 
     this.#waitings.splice(index, 1);
-    this.#current--;
+    if (this.#current > 0) {
+      this.#current--;
+    }
   }
 
   release() {

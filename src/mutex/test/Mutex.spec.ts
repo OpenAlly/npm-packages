@@ -85,7 +85,7 @@ describe("Mutex", () => {
     it("should trigger cancel if there is promises waiting to be acquired", async() => {
       let released = false;
       const mu = new Mutex({ concurrency: 1 });
-      mu.once("release", () => (released = true));
+      mu.once(MutexRelease, () => (released = true));
 
       const free = await mu.acquire();
       setImmediate(() => mu.reset());
@@ -149,6 +149,22 @@ describe("Mutex", () => {
       assert.strictEqual(released, false);
     });
 
+    it("should assert that the Node.js timer behind delayBeforeAutomaticRelease options is properly cleared", async() => {
+      let releaseCount = 0;
+      const mu = new Mutex({ concurrency: 1 });
+      mu.on(MutexRelease, () => (releaseCount++));
+
+      const delayBeforeAutomaticRelease = 10;
+      const free = await mu.acquire({
+        delayBeforeAutomaticRelease
+      });
+      setImmediate(() => free());
+      await once(mu, MutexRelease, { signal: AbortSignal.timeout(20) });
+      await timers.setTimeout(delayBeforeAutomaticRelease * 2);
+
+      assert.strictEqual(releaseCount, 1);
+    });
+
     it("should throw with MutexCanceledError if abort signal is already aborted!", async() => {
       const mu = new Mutex({ concurrency: 1 });
 
@@ -204,6 +220,25 @@ describe("Mutex", () => {
       ]);
 
       assert.strictEqual(releaseCount, 7);
+    });
+
+    it("should continue to work even if we release and abort signal at the same time", async() => {
+      const mu = new Mutex({ concurrency: 1 });
+      const ac = new AbortController();
+
+      await mu.acquire();
+      setImmediate(() => {
+        mu.release().release();
+        ac.abort();
+      });
+
+      const free = await mu.acquire({ signal: ac.signal });
+      assert.strictEqual(mu.running, 1);
+
+      setImmediate(() => free());
+      await once(mu, MutexRelease, { signal: AbortSignal.timeout(10) });
+
+      assert.strictEqual(mu.running, 0);
     });
   });
 });
