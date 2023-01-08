@@ -7,7 +7,14 @@ export interface IMutexOptions {
   /**
    * @default 5
    */
-  concurrent?: number;
+  concurrency?: number;
+
+  /**
+   * If disabled it will unref() Node.js timers (allowing to not keep event loop alive).
+   *
+   * @default true
+   */
+  keepReferencingTimers?: boolean;
 }
 
 export interface IMutexAcquireOptions {
@@ -24,21 +31,27 @@ export interface IMutexAcquireOptions {
   delayBeforeAutomaticRelease?: number;
 }
 
+export const MutexRelease = Symbol("MutexRelease");
+
 export class Mutex extends EventEmitter {
+  static MaximumConcurrency = 1_000;
+
   #canceled = false;
+  #keepReferencingTimers = true;
   #waitings: [(value: unknown) => void, (reason?: string | Error) => void, string][] = [];
-  #max = 5;
+  #concurrency = 5;
   #current = 0;
 
   constructor(options: IMutexOptions = Object.create(null)) {
     super();
-    const { concurrent = 5 } = options;
+    const { concurrency = 5, keepReferencingTimers = true } = options;
 
-    this.#max = concurrent;
+    this.#keepReferencingTimers = keepReferencingTimers;
+    this.#concurrency = Math.min(Math.max(concurrency, 1), Mutex.MaximumConcurrency);
   }
 
-  get max() {
-    return this.#max;
+  get concurrency() {
+    return this.#concurrency;
   }
 
   get running() {
@@ -46,7 +59,7 @@ export class Mutex extends EventEmitter {
   }
 
   get locked() {
-    return this.#current >= this.max;
+    return this.#current >= this.#concurrency;
   }
 
   cancel() {
@@ -57,6 +70,8 @@ export class Mutex extends EventEmitter {
       reject(new MutexCanceledError());
     }
     this.#waitings = [];
+
+    return this;
   }
 
   reset() {
@@ -64,6 +79,8 @@ export class Mutex extends EventEmitter {
       this.cancel();
     }
     this.#canceled = false;
+
+    return this;
   }
 
   async acquire(options: IMutexAcquireOptions = {}) {
@@ -90,6 +107,9 @@ export class Mutex extends EventEmitter {
         isReleased = true;
         this.release();
       }, delayBeforeAutomaticRelease);
+    if (!this.#keepReferencingTimers && timer !== null) {
+      timer.unref();
+    }
 
     return () => {
       if (isReleased) {
@@ -140,20 +160,22 @@ export class Mutex extends EventEmitter {
 
   release() {
     if (this.running === 0) {
-      return;
+      return this;
     }
 
-    this.emit("release");
+    this.emit(MutexRelease);
     this.#current--;
     const promiseArg = this.#waitings.shift();
     if (typeof promiseArg === "undefined") {
-      return;
+      return this;
     }
 
     const [resolve] = promiseArg;
     if (resolve) {
       resolve(void 0);
     }
+
+    return this;
   }
 }
 
