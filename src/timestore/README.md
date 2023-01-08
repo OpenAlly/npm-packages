@@ -6,6 +6,18 @@
   An abstract class designed to manage the Time To Live (TTL) of a given list of identifiers. This implementation can be combined with other structures to allow your keys or values to expire after a certain time.
 </p>
 
+<p align="center">
+  <a href="https://github.com/OpenAlly/npm-packages/tree/main/src/timestore">
+    <img src="https://img.shields.io/bundlephobia/min/@openally/timestore?style=for-the-badge" alt="size">
+  </a>
+  <a href="https://github.com/OpenAlly/npm-packages/tree/main/src/timestore">
+    <img src="https://img.shields.io/npm/dw/@openally/timestore?style=for-the-badge" alt="download">
+  </a>
+  <a href="https://github.com/OpenAlly/npm-packages/tree/main/src/timestore">
+    <img src="https://img.shields.io/github/actions/workflow/status/OpenAlly/npm-packages/timestore.yml?style=for-the-badge">
+  </a>
+</p>
+
 > **Warning** Internally it uses a Node.js timer. This library does not guarantee that the timers doesn't drift.
 
 ## Requirements

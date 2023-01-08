@@ -6,6 +6,15 @@
   Another Mutex/Semaphore implementation with first-class support of AbortSignal
 </p>
 
+<p align="center">
+  <a href="https://github.com/OpenAlly/npm-packages/tree/main/src/mutex">
+    <img src="https://img.shields.io/bundlephobia/min/@openally/mutex?style=for-the-badge" alt="size">
+  </a>
+  <a href="https://github.com/OpenAlly/npm-packages/tree/main/src/mutex">
+    <img src="https://img.shields.io/npm/dw/@openally/mutex?style=for-the-badge" alt="download">
+  </a>
+</p>
+
 ## Requirements
 - [Node.js](https://nodejs.org/en/) v16 or higher
 
