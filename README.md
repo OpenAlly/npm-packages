@@ -2,12 +2,30 @@
 <img width="500" src="https://user-images.githubusercontent.com/4438263/196032102-1d43ad83-48ac-4cd3-82ca-3fd197313430.png" alt="openally">
 </p>
 
-<p align="center"><h1 align="center">
-  NPM Packages
-</h1>
+<p align="center">
+  <h1 align="center">NPM Packages</h1>
+</p>
 
 <p align="center">
   OpenAlly monorepo to store common organization npm packages
+</p>
+
+<p align="center">
+  <a href="https://github.com/OpenAlly/npm-packages">
+    <img src="https://img.shields.io/github/license/OpenAlly/npm-packages?style=for-the-badge" alt="license">
+  </a>
+  <a href="https://github.com/OpenAlly/npm-packages">
+    <img src="https://img.shields.io/maintenance/yes/2023?style=for-the-badge" alt="maintained">
+  </a>
+  <a href="https://github.com/OpenAlly/npm-packages">
+    <img src="https://img.shields.io/snyk/vulnerabilities/github/OpenAlly/npm-packages?style=for-the-badge" alt="vulnerabilities">
+  </a>
+  <a href="https://github.com/OpenAlly/npm-packages">
+    <img src="https://img.shields.io/badge/Typescript-294E80.svg?style=for-the-badge&logo=typescript" alt="typescript">
+  </a>
+  <a href="https://github.com/OpenAlly/npm-packages">
+    <img src="https://img.shields.io/static/v1?&label=module&message=ESM%20and%20CJS&color=9cf&style=for-the-badge" alt="esm-cjs">
+  </a>
 </p>
 
 ## Requirements
@@ -21,6 +39,8 @@ Click on one of the links to access the documentation of the package:
 | name | package and link |
 | --- | --- |
 | timestore | [@openally/timestore](./src/timestore/README.md) |
+| timemap | [@openally/timemap](./src/timemap/README.md) |
+| mutex | [@openally/mutex](./src/mutex/README.md) |
 
 These packages are available in the Node Package Repository and can be easily installed with [npm](https://docs.npmjs.com/getting-started/what-is-npm) or [yarn](https://yarnpkg.com).
 ```bash

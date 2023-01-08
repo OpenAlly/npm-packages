@@ -49,7 +49,7 @@ describe("Mutex", () => {
       });
     });
 
-    it("should reject all promises waiting to be acquired", async() => {
+    it("should reject all lock (promises) waiting to be acquired", async() => {
       let released = false;
       const mu = new Mutex({ concurrency: 1 });
       mu.once(MutexRelease, () => (released = true));
