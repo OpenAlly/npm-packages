@@ -1,9 +1,7 @@
-/* eslint-disable max-nested-callbacks */
-
 // Import Node.js Dependencies
-import timers from "node:timers/promises";
 import { describe, it } from "node:test";
 import { once } from "node:events";
+import timers from "node:timers/promises";
 import assert from "node:assert/strict";
 
 // Import Internal Dependencies

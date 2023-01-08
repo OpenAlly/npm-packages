@@ -24,8 +24,5 @@
   ],
   "keywords": [],
   "author": "GENTILHOMME Thomas <gentilhomme.thomas@gmail.com>",
-  "license": "MIT",
-  "devDependencies": {
-    "tsx": "^3.12.1"
-  }
+  "license": "MIT"
 }
