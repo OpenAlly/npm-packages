@@ -13,6 +13,9 @@
   <a href="https://github.com/OpenAlly/npm-packages/tree/main/src/mutex">
     <img src="https://img.shields.io/npm/dw/@openally/mutex?style=for-the-badge" alt="download">
   </a>
+  <a href="https://github.com/OpenAlly/npm-packages/tree/main/src/mutex">
+    <img src="https://img.shields.io/github/actions/workflow/status/OpenAlly/npm-packages/mutex.yml?style=for-the-badge">
+  </a>
 </p>
 
 ## Requirements
