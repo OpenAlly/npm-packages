@@ -82,6 +82,12 @@ describe("TimeStore", () => {
 
       expect(store.ttl).to.equal(ttl);
     });
+
+    it("should return ttl zero if no ttl is provided in the constructor", () => {
+      const store = new TimeStore();
+
+      expect(store.ttl).to.equal(0);
+    });
   });
 
   describe("add", () => {
@@ -167,6 +173,58 @@ describe("TimeStore", () => {
 
       expect(counter.count).to.equal(2);
       expect(customEECounter.count).to.equal(1);
+
+      const { isMatching } = new IteratorMatcher()
+        .expect(TimeStore.Renewed)
+        .expect(TimeStore.Expired)
+        .execute(counter.events(), { allowNoMatchingValues: false });
+      expect(isMatching).to.equal(true);
+    });
+
+    it("should not expire if no ttl is provided in the constructor", async() => {
+      const store = new TimeStore();
+      const counter = new utils.EventEmitterCounter(store, [
+        TimeStore.Renewed
+      ]);
+
+      store.add("foo");
+      await timers.setTimeout(100);
+      store.add("foo");
+
+      const { isMatching } = new IteratorMatcher()
+        .expect(TimeStore.Renewed)
+        .execute(counter.events(), { allowNoMatchingValues: false });
+      expect(isMatching).to.equal(true);
+    });
+
+    it("should renew and make expire a given identifier that didn't had any ttl", async() => {
+      const store = new TimeStore();
+      const counter = new utils.EventEmitterCounter(store, [
+        TimeStore.Renewed,
+        TimeStore.Expired
+      ]);
+
+      store.add("foo");
+      store.add("foo", { ttl: 10 });
+      await timers.setTimeout(100);
+
+      const { isMatching } = new IteratorMatcher()
+        .expect(TimeStore.Renewed)
+        .expect(TimeStore.Expired)
+        .execute(counter.events(), { allowNoMatchingValues: false });
+      expect(isMatching).to.equal(true);
+    });
+
+    it("should keep the original identifier TTL when we renew it with keepIdentifierBirthTTL equal true", async() => {
+      const store = new TimeStore({ ttl: 50 });
+      const counter = new utils.EventEmitterCounter(store, [
+        TimeStore.Renewed,
+        TimeStore.Expired
+      ]);
+
+      store.add("foo");
+      store.add("foo", { ttl: 500, keepIdentifierBirthTTL: true });
+      await timers.setTimeout(100);
 
       const { isMatching } = new IteratorMatcher()
         .expect(TimeStore.Renewed)
