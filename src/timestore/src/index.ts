@@ -13,7 +13,7 @@ export interface ITimeStoreConstructorOptions {
   /**
    * Time To Live (Lifetime of stored identifiers).
    */
-  ttl: number;
+  ttl?: number;
   /**
    * Automatically expire identifiers when Node.js process "exit" event is triggered.
    *
@@ -41,6 +41,13 @@ export interface ITimeStoreAddOptions {
    * If no value provided it will take the class TTL value.
    */
   ttl?: number;
+
+  /**
+   * If identifier exist then keep is original timestamp and ttl.
+   *
+   * @default false
+   */
+  keepIdentifierBirthTTL?: boolean;
 }
 
 export type TimeStoreIdentifier = string | symbol | number | boolean | bigint | object | null;
@@ -61,7 +68,7 @@ export class TimeStore extends EventEmitter {
   #timer: NodeJS.Timeout | null = null;
   #customEventEmitter: EventEmitter | null = null;
 
-  constructor(options: ITimeStoreConstructorOptions) {
+  constructor(options: ITimeStoreConstructorOptions = {}) {
     super();
     const {
       ttl,
@@ -70,7 +77,7 @@ export class TimeStore extends EventEmitter {
       eventEmitter = null
     } = options;
 
-    this.#ttl = ttl;
+    this.#ttl = ttl ?? 0;
     this.#customEventEmitter = eventEmitter;
     this.#keepEventLoopAlive = keepEventLoopAlive;
 
@@ -101,15 +108,23 @@ export class TimeStore extends EventEmitter {
     identifier: TimeStoreIdentifier,
     options: ITimeStoreAddOptions = {}
   ) {
-    const { ttl = this.#ttl } = options;
+    const { ttl = this.#ttl, keepIdentifierBirthTTL = false } = options;
 
-    const hasIdentifier = this.#identifiers.has(identifier);
-    const timestamp = Date.now();
+    const originalIdentifier = this.#identifiers.get(identifier);
+    const hasIdentifier = typeof originalIdentifier !== "undefined";
 
-    this.#identifiers.set(identifier, { timestamp, ttl });
+    const timestamp = hasIdentifier && keepIdentifierBirthTTL ? originalIdentifier.timestamp : Date.now();
+    if (!keepIdentifierBirthTTL) {
+      this.#identifiers.set(identifier, { timestamp, ttl });
+    }
+
     if (hasIdentifier) {
       this.emit(TimeStore.Renewed, identifier);
       this.#customEventEmitter?.emit(TimeStore.Renewed, identifier);
+    }
+
+    if (ttl === 0) {
+      return this;
     }
 
     if (this.#timer === null) {
@@ -159,9 +174,11 @@ export class TimeStore extends EventEmitter {
 
     while (sortedIdentifiers.length > 0) {
       const [identifier, value] = sortedIdentifiers.pop()!;
-      const delta = Date.now() - value.timestamp;
+      if (value.ttl === 0) {
+        continue;
+      }
 
-      // If current key is expired
+      const delta = Date.now() - value.timestamp;
       if (delta >= value.ttl) {
         this.emit(TimeStore.Expired, identifier);
       }

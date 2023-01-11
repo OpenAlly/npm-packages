@@ -40,7 +40,8 @@ import { TimeStore } from "@openally/timestore";
 
 const store = new TimeStore({ ttl: 10_000 })
   .add("foo")
-  .add("bar", { ttl: 500 });
+  .add("bar", { ttl: 500 })
+  .add("bar", { ttl: 200, keepIdentifierBirthTTL: true }); // will be ignored!
 
 console.log(store.ttl); // 10000
 
@@ -61,7 +62,7 @@ Identifier are often described with the following type:
 export type TimeStoreIdentifier = string | symbol | number | boolean | bigint | object | null;
 ```
 
-### constructor(options: ITimeStoreConstructorOptions)
+### constructor(options?: ITimeStoreConstructorOptions)
 The constructor `options` payload is described by the following TS interface:
 
 ```ts
@@ -69,7 +70,7 @@ interface ITimeStoreConstructorOptions {
   /**
    * Time To Live (Lifetime of stored identifiers).
    */
-  ttl: number;
+  ttl?: number;
   /**
    * Automatically expire identifiers when Node.js process "exit" event is triggered.
    *
@@ -92,6 +93,8 @@ interface ITimeStoreConstructorOptions {
 }
 ```
 
+If the `ttl` option is not provided all identifiers will remain active. The default class `ttl` will be equal **zero**.
+
 ### add(identifier: TimeStoreIdentifier, options?: ITimeStoreAddOptions): this
 The `options` payload is described by the following TS interface:
 
@@ -102,10 +105,17 @@ interface ITimeStoreAddOptions {
    * If no value provided it will take the class TTL value.
    */
   ttl?: number;
+
+  /**
+   * If identifier exist then keep is original timestamp and ttl.
+   *
+   * @default false
+   */
+  keepIdentifierBirthTTL?: boolean;
 }
 ```
 
-> **Note** Adding an existing ID will reset its previous TTL/timestamp
+> **Note** Adding an existing ID will reset its previous TTL/timestamp except if the `keepIdentifierBirthTTL` option is set to **true**.
 
 ### addTsv(data: tSvResponse): this
 Add a value using a TimeStoreValue:
@@ -131,7 +141,7 @@ Remove a given identifier from the store.
 Calling this method will remove all stored identifiers and clear the internal Node.js Timeout. The instance basically returns to its initial state.
 
 ### get ttl(): number
-Read-only TTL.
+Read-only TTL. Return `0` if the class has no ttl.
 
 ## Events
 
