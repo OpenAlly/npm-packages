@@ -15,16 +15,15 @@ import {
 // CONSTANTS
 const kTimeStore = Symbol("TimeStore");
 
-export class TimeMap<K extends TimeStoreIdentifier, V> extends Map<K, V> {
-  static TTL = 1_000;
+export default class EphemeralMap<K extends TimeStoreIdentifier, V> extends Map<K, V> {
   public events: EventEmitter;
   public [kTimeStore]: TimeStore;
 
   constructor(
     iterable?: Iterable<readonly [K, V]>,
-    options: Omit<ITimeStoreConstructorOptions, "eventEmitter"> = { ttl: TimeMap.TTL }
+    options: Omit<ITimeStoreConstructorOptions, "eventEmitter"> = {}
   ) {
-    super(iterable);
+    super();
 
     this.events = new EventEmitter();
     const timestore = new TimeStore({
@@ -38,6 +37,12 @@ export class TimeMap<K extends TimeStoreIdentifier, V> extends Map<K, V> {
     Object.defineProperty(this, kTimeStore, {
       value: timestore
     });
+
+    if (iterable) {
+      for (const [key, value] of iterable) {
+        this.set(key, value);
+      }
+    }
   }
 
   get ttl() {
@@ -68,13 +73,13 @@ export class TimeMap<K extends TimeStoreIdentifier, V> extends Map<K, V> {
   }
 
   static set<K extends TimeStoreIdentifier, V>(
-    obj: TimeMap<K, V> | Map<K, V>,
+    obj: EphemeralMap<K, V> | Map<K, V>,
     pair: readonly [K, V],
     options?: ITimeStoreConstructorOptions
   ) {
     const [key, value] = pair;
 
-    if (obj instanceof TimeMap) {
+    if (obj instanceof EphemeralMap) {
       obj.set(tSv(options)(key), value);
     }
     else {

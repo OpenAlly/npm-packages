@@ -1,5 +1,5 @@
 <p align="center"><h1 align="center">
-  TimeMap
+  EphemeralMap
 </h1>
 
 <p align="center">
@@ -14,15 +14,15 @@
 This package is available in the Node Package Repository and can be easily installed with [npm](https://docs.npmjs.com/getting-started/what-is-npm) or [yarn](https://yarnpkg.com).
 
 ```bash
-$ npm i @openally/timemap
+$ npm i @openally/ephemeral-map
 # or
-$ yarn add @openally/timemap
+$ yarn add @openally/ephemeral-map
 ```
 
 ## Usage example
 
 ```ts
-import TimeMap from "@openally/timemap";
+import EphemeralMap from "@openally/ephemeral-map";
 ```
 
 ## API

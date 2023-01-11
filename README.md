@@ -39,7 +39,7 @@ Click on one of the links to access the documentation of the package:
 | name | package and link |
 | --- | --- |
 | timestore | [@openally/timestore](./src/timestore) |
-| timemap | [@openally/timemap](./src/timemap) |
+| ephemeral-map | [@openally/timemap](./src/ephemeral-map) |
 | mutex | [@openally/mutex](./src/mutex) |
 
 These packages are available in the Node Package Repository and can be easily installed with [npm](https://docs.npmjs.com/getting-started/what-is-npm) or [yarn](https://yarnpkg.com).
