@@ -13,7 +13,7 @@
     "forceConsistentCasingInFileNames": true,
     "sourceMap": true,
     "rootDir": "./src",
-    "types": ["node"]
+    "types": ["node", "mocha"]
   },
   "include": ["src"],
   "exclude": ["node_modules", "dist"]

@@ -1,0 +1,28 @@
+{
+  "name": "@openally/probe",
+  "version": "1.0.0",
+  "description": "AST probe designed to build SAST scanner",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./dist/index.js",
+      "import": "./dist/index.mjs",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs,esm --dts --clean",
+    "prepublishOnly": "npm run build",
+    "test": "node --no-warnings --loader tsx --test test/probe.spec.ts",
+    "coverage": "c8 -r html npm test",
+    "lint": "cross-env eslint src/**/*.ts"
+  },
+  "files": [
+    "dist"
+  ],
+  "keywords": [],
+  "author": "GENTILHOMME Thomas <gentilhomme.thomas@gmail.com>",
+  "license": "MIT"
+}
