@@ -14,7 +14,8 @@
   "workspaces": [
     "src/timestore",
     "src/ephemeral-map",
-    "src/mutex"
+    "src/mutex",
+    "src/result"
   ],
   "license": "MIT",
   "bugs": {

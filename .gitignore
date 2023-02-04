@@ -104,3 +104,4 @@ dist
 .tern-port
 
 src/mutex/temp
+src/result/temp
