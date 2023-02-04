@@ -30,7 +30,9 @@ export class IsolatedContext<T, H> {
     return { type: SKIP, [ISOLATED_SIGNAL]: true };
   }
 
-  rewind(): IsolatedSignal {
+  rewind(newLocalData?: () => H): IsolatedSignal {
+    this.local = newLocalData?.() ?? this.local;
+
     return { type: REWIND, [ISOLATED_SIGNAL]: true };
   }
 }
