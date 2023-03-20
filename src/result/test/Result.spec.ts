@@ -90,6 +90,22 @@ describe("Err", () => {
         "oops"
       );
     });
+
+    it("should throw when unwraping an Err value and display the error cause (value is an Error)", () => {
+      class CustomError extends Error {
+        foo: string;
+
+        constructor(message: string) {
+          super(message);
+          this.foo = "bar";
+        }
+      }
+
+      assert.throws(
+        () => Err(new CustomError("oops")).unwrap(),
+        JSON.stringify({ foo: "bar" })
+      );
+    });
   });
 
   describe("unwrapOr", () => {
