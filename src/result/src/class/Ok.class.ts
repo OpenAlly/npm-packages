@@ -21,6 +21,10 @@ export class OkImpl<T> {
     return this.val;
   }
 
+  safeUnwrap(): T {
+    return this.val;
+  }
+
   map<T2>(mapper: (val: T) => T2): OkImpl<T2> {
     return new OkImpl(mapper(this.val));
   }

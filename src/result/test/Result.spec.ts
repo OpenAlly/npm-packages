@@ -26,6 +26,12 @@ describe("Ok", () => {
     });
   });
 
+  describe("safeUnwrap", () => {
+    it("should return boxed value without throwing error", () => {
+      assert.strictEqual(Ok(1).safeUnwrap(), 1);
+    });
+  });
+
   describe("unwrapOr", () => {
     it("should unwraped the original boxed value (without applying Or value)", () => {
       assert.strictEqual(Ok(1).unwrapOr(5), 1);
