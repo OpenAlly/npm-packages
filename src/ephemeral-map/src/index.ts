@@ -5,9 +5,9 @@ import { EventEmitter } from "node:events";
 import {
   TimeStore,
   tSv,
+  tSvResponse,
   TSV_SYMBOL,
 
-  tSvResponse,
   TimeStoreIdentifier,
   ITimeStoreConstructorOptions
 } from "@openally/timestore";
@@ -15,7 +15,12 @@ import {
 // CONSTANTS
 const kTimeStore = Symbol("TimeStore");
 
+export { tSv, tSvResponse };
+
 export default class EphemeralMap<K extends TimeStoreIdentifier, V> extends Map<K, V> {
+  static Expired = TimeStore.Expired;
+  static Renewed = TimeStore.Renewed;
+
   public events: EventEmitter;
   public [kTimeStore]: TimeStore;
 
@@ -26,13 +31,13 @@ export default class EphemeralMap<K extends TimeStoreIdentifier, V> extends Map<
     super();
 
     this.events = new EventEmitter();
-    const timestore = new TimeStore({
-      eventEmitter: this.events,
-      ...options
-    });
+    const timestore = new TimeStore(options);
     timestore.on(TimeStore.Expired, (id) => {
+      this.events.emit(TimeStore.Expired, id, super.get(id));
+
       super.delete(id);
     });
+    timestore.on(TimeStore.Renewed, (id) => this.events.emit(TimeStore.Renewed, id));
 
     Object.defineProperty(this, kTimeStore, {
       value: timestore

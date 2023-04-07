@@ -3,6 +3,15 @@
   "references": [
     {
       "path": "./src/timestore"
+    },
+    {
+      "path": "./src/mutex"
+    },
+    {
+      "path": "./src/ephemeral-map"
+    },
+    {
+      "path": "./src/result"
     }
   ]
 }

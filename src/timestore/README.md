@@ -148,7 +148,7 @@ Read-only TTL. Return `0` if the class has no ttl.
 The TimeStore class broadcast two distinct events:
 
 - TimeStore.Expired (**when a given identifier expire**)
-- TimeStore.Renewed (**when an identifier TTL is tenewed with add() method**)
+- TimeStore.Renewed (**when an identifier TTL is Renewed with add() method**)
 
 > **Warning** Both value are Symbols
 
