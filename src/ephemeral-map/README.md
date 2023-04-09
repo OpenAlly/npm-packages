@@ -30,14 +30,11 @@ const data = [
 
 // Note: ttl is not mandatory
 const em = new EphemeralMap(data, { ttl: 500 });
-em.events.on(EphemeralMap.Expired, (key, value) => {
+em.on(EphemeralMap.Expired, (key, value) => {
   console.log(`Identifier '${key}' with value '${value}' has expired!`);
 });
 
-const customTtlFactory = tSv({ ttl: 200 });
-em.set(customTtlFactory("key"), "value");
-
-EphemeralMap.set(em, ["foo", "bar"], { ttl: 400 });
+em.set(tSv({ ttl: 200 })("key"), "value");
 ```
 
 ## API
@@ -45,6 +42,19 @@ EphemeralMap extend from a normal Map. By default the inner TimeStore set his tt
 
 ### get ttl(): number
 Read-only TTL. Return `0` if the class has no ttl.
+
+### static set
+
+Add a pair (key, value) to a Map or EphemeralMap.
+If the first argument is a Map then the third argument is ignored.
+
+```ts
+const em = new EphemeralMap();
+
+EphemeralMap.set(em, ["foo", "bar"], {
+  ttl: 400
+});
+```
 
 ## Events
 

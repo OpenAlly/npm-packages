@@ -17,11 +17,11 @@ const kTimeStore = Symbol("TimeStore");
 
 export { tSv, tSvResponse };
 
-export default class EphemeralMap<K extends TimeStoreIdentifier, V> extends Map<K, V> {
+export default class EphemeralMap<K extends TimeStoreIdentifier, V> extends EventEmitter {
   static Expired = TimeStore.Expired;
   static Renewed = TimeStore.Renewed;
 
-  public events: EventEmitter;
+  private data: Map<K, V> = new Map();
   public [kTimeStore]: TimeStore;
 
   constructor(
@@ -30,14 +30,13 @@ export default class EphemeralMap<K extends TimeStoreIdentifier, V> extends Map<
   ) {
     super();
 
-    this.events = new EventEmitter();
     const timestore = new TimeStore(options);
     timestore.on(TimeStore.Expired, (id) => {
-      this.events.emit(TimeStore.Expired, id, super.get(id));
+      this.emit(TimeStore.Expired, id, this.data.get(id));
 
-      super.delete(id);
+      this.data.delete(id);
     });
-    timestore.on(TimeStore.Renewed, (id) => this.events.emit(TimeStore.Renewed, id));
+    timestore.on(TimeStore.Renewed, (id) => this.emit(TimeStore.Renewed, id));
 
     Object.defineProperty(this, kTimeStore, {
       value: timestore
@@ -54,27 +53,65 @@ export default class EphemeralMap<K extends TimeStoreIdentifier, V> extends Map<
     return this[kTimeStore].ttl;
   }
 
-  clear() {
-    this[kTimeStore].clear();
-    super.clear();
+  get size() {
+    return this.data.size;
   }
 
-  delete(key: K) {
+  keys() {
+    return this.data.keys();
+  }
+
+  values() {
+    return this.data.values();
+  }
+
+  entries() {
+    return this.data.entries();
+  }
+
+  forEach(
+    callback: (value: V, key: K, map: Map<K, V>) => void,
+    thisArg?: any
+  ) {
+    const callbackFn = thisArg ? callback.bind(thisArg) : callback;
+    for (const [key, value] of this.data) {
+      callbackFn(value, key, this.data);
+    }
+  }
+
+  [Symbol.iterator]() {
+    return this.entries();
+  }
+
+  set(key: K | tSvResponse<K>, value: V) {
+    if (isTsvResponse<K>(key)) {
+      this[kTimeStore].addTsv(key);
+
+      return this.data.set(key.value, value);
+    }
+    this[kTimeStore].add(key);
+
+    return this.data.set(key, value);
+  }
+
+  has(key: K): boolean {
+    return this.data.has(key);
+  }
+
+  get(key: K): V | undefined {
+    return this.data.get(key);
+  }
+
+  delete(key: K): boolean {
     this[kTimeStore].delete(key);
-    const isDeleted = super.delete(key);
+    const isDeleted = this.data.delete(key);
 
     return isDeleted;
   }
 
-  set(key: K | tSvResponse<K>, value: V) {
-    if (isTsvRespone<K>(key)) {
-      this[kTimeStore].addTsv(key);
-
-      return super.set(key.value, value);
-    }
-    this[kTimeStore].add(key);
-
-    return super.set(key, value);
+  clear(): void {
+    this[kTimeStore].clear();
+    this.data.clear();
   }
 
   static set<K extends TimeStoreIdentifier, V>(
@@ -93,6 +130,6 @@ export default class EphemeralMap<K extends TimeStoreIdentifier, V> extends Map<
   }
 }
 
-function isTsvRespone<T>(value: any): value is tSvResponse<T> {
+function isTsvResponse<T>(value: any): value is tSvResponse<T> {
   return value[TSV_SYMBOL];
 }

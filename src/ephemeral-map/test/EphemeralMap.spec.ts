@@ -2,6 +2,7 @@
 import { describe, it, test } from "node:test";
 import { EventEmitter, once } from "node:events";
 import assert from "node:assert/strict";
+import timers from "node:timers/promises";
 
 // Import Internal Dependencies
 import EphemeralMap, { tSv } from "../src/index";
@@ -11,6 +12,7 @@ describe("EphemeralMap", () => {
     const em = new EphemeralMap();
 
     em.set("foo", "bar");
+    assert.ok(em.has("foo"));
     assert.strictEqual(em.get("foo"), "bar");
     assert.deepEqual([...em.keys()], ["foo"]);
     assert.deepEqual([...em.values()], ["bar"]);
@@ -34,7 +36,7 @@ describe("EphemeralMap", () => {
     });
     em.set("foo", "bar");
 
-    const pair = await once(em.events, EphemeralMap.Expired);
+    const pair = await once(em, EphemeralMap.Expired);
     assert.deepEqual(pair, ["foo", "bar"]);
   });
 
@@ -45,10 +47,10 @@ describe("EphemeralMap", () => {
       assert.ok(em instanceof Map);
     });
 
-    it("should have an EventEmitter on a public events property", () => {
+    it("should be an instanceof EventEmitter", () => {
       const em = new EphemeralMap();
 
-      assert.ok(em.events instanceof EventEmitter);
+      assert.ok(em instanceof EventEmitter);
     });
 
     it("should create a new EphemeralMap instance with an iterable", () => {
@@ -95,8 +97,23 @@ describe("EphemeralMap", () => {
 
       EphemeralMap.set(em, ["foo", "bar"], { ttl: 20 });
 
-      const pair = await once(em.events, EphemeralMap.Expired);
+      const pair = await once(em, EphemeralMap.Expired);
       assert.deepEqual(pair, ["foo", "bar"]);
+    });
+  });
+
+  describe("clear", () => {
+    it("should clear active keys (and clear internal Store)", async() => {
+      const em = new EphemeralMap(void 0, { ttl: 50 });
+      let counter = 0;
+      em.on(EphemeralMap.Expired, () => counter++);
+
+      em.set("foo", "bar");
+      em.clear();
+      assert.ok(!em.has("foo"));
+
+      await timers.setTimeout(100);
+      assert.strictEqual(counter, 0);
     });
   });
 
