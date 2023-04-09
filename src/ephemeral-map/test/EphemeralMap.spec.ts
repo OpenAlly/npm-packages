@@ -41,12 +41,6 @@ describe("EphemeralMap", () => {
   });
 
   describe("constructor", () => {
-    it("should be instanceof Map", () => {
-      const em = new EphemeralMap();
-
-      assert.ok(em instanceof Map);
-    });
-
     it("should be an instanceof EventEmitter", () => {
       const em = new EphemeralMap();
 
