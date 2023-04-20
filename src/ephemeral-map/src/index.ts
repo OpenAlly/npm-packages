@@ -17,20 +17,27 @@ const kTimeStore = Symbol("TimeStore");
 
 export { tSv, tSvResponse };
 
+export interface IEphemeralMapOptions extends Omit<ITimeStoreConstructorOptions, "eventEmitter"> {
+  refreshOnGet?: boolean;
+}
+
 export default class EphemeralMap<K extends TimeStoreIdentifier, V> extends EventEmitter {
   static Expired = TimeStore.Expired;
   static Renewed = TimeStore.Renewed;
 
   private data: Map<K, V> = new Map();
+  private refreshOnGet: boolean;
   public [kTimeStore]: TimeStore;
 
   constructor(
     iterable?: Iterable<readonly [K, V]>,
-    options: Omit<ITimeStoreConstructorOptions, "eventEmitter"> = {}
+    options: IEphemeralMapOptions = {}
   ) {
     super();
+    const { refreshOnGet = false, ...timeStoreOptions } = options;
 
-    const timestore = new TimeStore(options);
+    this.refreshOnGet = refreshOnGet;
+    const timestore = new TimeStore(timeStoreOptions);
     timestore.on(TimeStore.Expired, (id) => {
       this.emit(TimeStore.Expired, id, this.data.get(id));
 
@@ -99,6 +106,10 @@ export default class EphemeralMap<K extends TimeStoreIdentifier, V> extends Even
   }
 
   get(key: K): V | undefined {
+    if (this.refreshOnGet && this.has(key)) {
+      this[kTimeStore].add(key);
+    }
+
     return this.data.get(key);
   }
 
