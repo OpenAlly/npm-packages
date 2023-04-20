@@ -1,13 +1,13 @@
-name: Mutex CI
+name: EphemeralMap CI
 
 on:
   push:
     branches: [main]
     paths:
-      - src/mutex/**
+      - src/ephemeral-map/**
   pull_request:
     paths:
-      - src/mutex/**
+      - src/ephemeral-map/**
 
 jobs:
   test:
@@ -24,5 +24,7 @@ jobs:
           node-version: ${{ matrix.node-version }}
       - name: Install dependencies
         run: npm ci
+      - name: Build timestore
+        run: npm run build --workspace=src/timestore
       - name: Run tests
-        run: npm run test --workspace=src/mutex
+        run: npm run test --workspace=src/ephemeral-map

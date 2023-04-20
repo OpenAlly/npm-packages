@@ -2,7 +2,7 @@ name: TimeStore CI
 
 on:
   push:
-    branches: main
+    branches: [main]
     paths:
       - src/timestore/**
   pull_request:

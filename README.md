@@ -39,7 +39,7 @@ Click on one of the links to access the documentation of the package:
 | name | package and link |
 | --- | --- |
 | timestore | [@openally/timestore](./src/timestore) |
-| ephemeral-map | [@openally/timemap](./src/ephemeral-map) |
+| ephemeral-map | [@openally/ephemeral-map](./src/ephemeral-map) |
 | mutex | [@openally/mutex](./src/mutex) |
 | result | [@openally/result](./src/result) |
 
