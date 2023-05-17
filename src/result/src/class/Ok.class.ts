@@ -40,3 +40,7 @@ export class OkImpl<T> {
     return this;
   }
 }
+
+export function Ok<T>(value: T) {
+  return new OkImpl<T>(value);
+}

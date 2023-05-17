@@ -1,14 +1,10 @@
 // Import Internal Dependencies
-import { OkImpl } from "./class/Ok.class.js";
-import { ErrImpl } from "./class/Err.class.js";
+import { Ok, OkImpl } from "./class/Ok.class.js";
+import { Err, ErrImpl } from "./class/Err.class.js";
 
-export function Ok<T>(value: T) {
-  return new OkImpl<T>(value);
-}
-
-export function Err<E>(value: E) {
-  return new ErrImpl<E>(value);
-}
+export { Option, Some } from "./class/Some.class.js";
+export { None } from "./class/None.class.js";
+export { Ok, Err };
 
 export type Result<T, E> = OkImpl<T> | ErrImpl<E>;
 
