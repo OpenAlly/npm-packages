@@ -3,7 +3,7 @@ import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 
 // Import Internal Dependencies
-import { Ok, Err, Result } from "../src/index.js";
+import { Ok, Err, Result, Some, None } from "../src/index.js";
 
 describe("Ok", () => {
   describe("constructor", () => {
@@ -171,3 +171,12 @@ describe("Result", () => {
   });
 });
 
+describe("Some", () => {
+  it("should return default value if Some is transformed to None and unwrapped", () => {
+    const unwrappedValue = Some(1)
+      .andThen(() => None)
+      .unwrapOr(5);
+
+    assert.equal(unwrappedValue, 5);
+  });
+});

@@ -50,3 +50,7 @@ export class ErrImpl<E> {
     return `${this}\n${this._stack}`;
   }
 }
+
+export function Err<E>(value: E) {
+  return new ErrImpl<E>(value);
+}
