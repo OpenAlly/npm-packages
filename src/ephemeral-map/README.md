@@ -43,6 +43,9 @@ EphemeralMap extend from a normal Map. By default the inner TimeStore set his tt
 ### get ttl(): number
 Read-only TTL. Return `0` if the class has no ttl.
 
+### emplace(key, handler)
+Method inspired from [the TC39 proposal](https://github.com/tc39/proposal-upsert) to add an upsert method on Map.
+
 ### static set
 
 Add a pair (key, value) to a Map or EphemeralMap.
