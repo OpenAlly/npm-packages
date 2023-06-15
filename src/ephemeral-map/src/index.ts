@@ -11,6 +11,7 @@ import {
   TimeStoreIdentifier,
   ITimeStoreConstructorOptions
 } from "@openally/timestore";
+import { RequireAtLeastOne } from "type-fest";
 
 // CONSTANTS
 const kTimeStore = Symbol("TimeStore");
@@ -20,6 +21,11 @@ export { tSv, tSvResponse };
 export interface IEphemeralMapOptions extends Omit<ITimeStoreConstructorOptions, "eventEmitter"> {
   refreshOnGet?: boolean;
 }
+
+export type EmplaceHandler<K extends TimeStoreIdentifier, V> = RequireAtLeastOne<{
+  insert: (key: K, map: EphemeralMap<K, V>) => V,
+  update: (old: V, key: K, map: EphemeralMap<K, V>) => V
+}>
 
 export default class EphemeralMap<K extends TimeStoreIdentifier, V> extends EventEmitter {
   static Expired = TimeStore.Expired;
@@ -118,6 +124,27 @@ export default class EphemeralMap<K extends TimeStoreIdentifier, V> extends Even
     const isDeleted = this.data.delete(key);
 
     return isDeleted;
+  }
+
+  emplace(
+    key: K, handler: EmplaceHandler<K, V>
+  ): V | undefined {
+    const oldValue = this.get(key);
+    if (typeof oldValue !== "undefined" && handler.update) {
+      const newValue = handler.update(oldValue, key, this);
+      this.set(key, newValue);
+
+      return newValue;
+    }
+
+    if (handler.insert) {
+      const newValue = handler.insert(key, this);
+      this.set(key, newValue);
+
+      return newValue;
+    }
+
+    return void 0;
   }
 
   clear(): void {

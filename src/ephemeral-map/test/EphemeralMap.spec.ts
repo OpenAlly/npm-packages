@@ -69,6 +69,56 @@ describe("EphemeralMap", () => {
     });
   });
 
+  describe("emplace", () => {
+    it("should insert new value if no matching key is detected", () => {
+      const em = new EphemeralMap<string, { failure: number }>();
+
+      const value = em.emplace("foo", {
+        insert() {
+          return { failure: 0 };
+        }
+      });
+
+      assert.ok(em.has("foo"));
+      const expectedValue = { failure: 0 };
+      assert.deepEqual(value, expectedValue);
+      assert.deepEqual(em.get("foo"), expectedValue);
+    });
+
+    it("should update old value", () => {
+      const em = new EphemeralMap<string, { failure: number }>();
+      em.set("foo", { failure: 0 });
+
+      const value = em.emplace("foo", {
+        update(oldValue) {
+          return { failure: oldValue.failure + 1 };
+        }
+      });
+
+      const expectedValue = { failure: 1 };
+      assert.deepEqual(value, expectedValue);
+      assert.deepEqual(em.get("foo"), expectedValue);
+    });
+
+    it("should update old value and ignore insert because the given key already exist", () => {
+      const em = new EphemeralMap<string, { failure: number }>();
+      em.set("foo", { failure: 10 });
+
+      const value = em.emplace("foo", {
+        update(oldValue) {
+          return { failure: oldValue.failure + 1 };
+        },
+        insert() {
+          return { failure: 0 };
+        }
+      });
+
+      const expectedValue = { failure: 11 };
+      assert.deepEqual(value, expectedValue);
+      assert.deepEqual(em.get("foo"), expectedValue);
+    });
+  });
+
   describe("static set", () => {
     it("should set a pair (key, value) on a ES6 Map", () => {
       const map = new Map();
