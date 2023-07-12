@@ -95,6 +95,10 @@ export class TimeStore extends EventEmitter {
     return this.#ttl;
   }
 
+  get size() {
+    return this.#identifiers.size;
+  }
+
   addTsv(data: tSvResponse) {
     if (!data[TSV_SYMBOL]) {
       return this;
@@ -154,6 +158,10 @@ export class TimeStore extends EventEmitter {
     this.#identifiers.clear();
 
     return this;
+  }
+
+  has(identifier: TimeStoreIdentifier) {
+    return this.#identifiers.has(identifier);
   }
 
   #hasTTLUnderCurrentIdentifier(now: number, ttl: number) {

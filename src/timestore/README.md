@@ -143,6 +143,12 @@ Calling this method will remove all stored identifiers and clear the internal No
 ### get ttl(): number
 Read-only TTL. Return `0` if the class has no ttl.
 
+### get size(): number
+Read-only store size.
+
+### has(): boolean
+Return `true` if the key exists in the store otherwise it will return `false`.
+
 ## Events
 
 The TimeStore class broadcast two distinct events:
