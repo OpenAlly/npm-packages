@@ -312,4 +312,32 @@ describe("TimeStore", () => {
       expect(store.delete("foobar")).to.equal(store);
     });
   });
+
+  describe("size", () => {
+    it("should return the TimeStore.identifiers size", () => {
+      const store = new TimeStore();
+      expect(store.size).to.equal(0);
+
+      store.add("random");
+      expect(store.size).to.equal(1);
+
+      store.clear();
+      expect(store.size).to.equal(0);
+    });
+  });
+
+  describe("has", () => {
+    it("should return 'true' if the key exists", () => {
+      const store = new TimeStore();
+
+      store.add("random");
+      expect(store.has("random")).to.equal(true);
+    });
+
+    it("should return 'false' if the key does not exist", () => {
+      const store = new TimeStore();
+
+      expect(store.has("random")).to.equal(false);
+    });
+  });
 });
