@@ -23,18 +23,15 @@
   },
   "homepage": "https://github.com/OpenAlly/npm-packages#readme",
   "devDependencies": {
-    "@nodesecure/eslint-config": "^1.6.0",
-    "@types/chai": "^4.3.4",
-    "@types/mocha": "^10.0.1",
-    "@types/node": "^18.11.18",
-    "c8": "^7.12.0",
-    "chai": "^4.3.7",
+    "@faker-js/faker": "^8.0.2",
+    "@nodesecure/eslint-config": "^1.8.0",
+    "@types/node": "^20.6.0",
+    "c8": "^8.0.1",
     "cross-env": "^7.0.3",
-    "mocha": "^10.2.0",
-    "sinon": "^15.0.1",
-    "ts-node": "^10.9.1",
-    "tsup": "^6.5.0",
-    "tsx": "^3.12.1",
-    "typescript": "^4.9.4"
+    "glob": "^10.3.4",
+    "sinon": "^15.2.0",
+    "tsup": "^7.2.0",
+    "tsx": "^3.12.8",
+    "typescript": "^4.9.5"
   }
 }

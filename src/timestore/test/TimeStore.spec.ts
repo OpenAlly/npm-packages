@@ -1,11 +1,10 @@
-/* eslint-disable max-nested-callbacks */
-
 // Import Node.js Dependencies
 import { EventEmitter, once } from "node:events";
+import { describe, it } from "node:test";
+import assert from "node:assert";
 import * as timers from "node:timers/promises";
 
 // Import Third-party Dependencies
-import { expect } from "chai";
 import { faker } from "@faker-js/faker";
 import { IteratorMatcher } from "iterator-matcher";
 import * as sinon from "sinon";
@@ -16,11 +15,11 @@ import * as utils from "./utils";
 
 describe("TimeStore", () => {
   it("should have two Symbols property attached to listen to events", () => {
-    expect(TimeStore.Expired).to.be.an("symbol");
-    expect(TimeStore.Renewed).to.be.an("symbol");
+    assert.equal(typeof TimeStore.Expired, "symbol");
+    assert.equal(typeof TimeStore.Renewed, "symbol");
 
-    expect(TimeStore.Expired).to.equal(Symbol.for("ExpiredTimeStoreEntry"));
-    expect(TimeStore.Renewed).to.equal(Symbol.for("RenewedTimeStoreEntry"));
+    assert.equal(TimeStore.Expired, Symbol.for("ExpiredTimeStoreEntry"));
+    assert.equal(TimeStore.Renewed, Symbol.for("RenewedTimeStoreEntry"));
   });
 
   describe("constructor", () => {
@@ -28,8 +27,9 @@ describe("TimeStore", () => {
       const eeDescriptorsLength = Reflect.ownKeys(new EventEmitter()).length;
       const store = new TimeStore({ ttl: 1000 });
 
-      expect(store).to.be.instanceof(EventEmitter);
-      expect(Reflect.ownKeys(store).length).to.equal(
+      assert.ok(store instanceof EventEmitter);
+      assert.equal(
+        Reflect.ownKeys(store).length,
         eeDescriptorsLength,
         "Should have the same number of property descriptor than a Node.js EventEmitter"
       );
@@ -46,7 +46,7 @@ describe("TimeStore", () => {
 
       // @ts-ignore
       const [identifier] = await once(store, TimeStore.Expired, AbortSignal.timeout(500));
-      expect(identifier).to.equal(expectedIdentifier);
+      assert.equal(identifier, expectedIdentifier);
     });
 
     it("should expire all identifiers on process 'exit' event if expireIdentifiersOnProcessExit options is enabled", async() => {
@@ -67,7 +67,7 @@ describe("TimeStore", () => {
 
         await timers.setTimeout(utils.safeTTL(ttl));
 
-        expect(counter.count).to.equal(numberOfElements);
+        assert.equal(counter.count, numberOfElements);
       }
       finally {
         processExitStub.restore();
@@ -80,13 +80,33 @@ describe("TimeStore", () => {
       const ttl = Number(faker.random.numeric(4));
       const store = new TimeStore({ ttl });
 
-      expect(store.ttl).to.equal(ttl);
+      assert.equal(store.ttl, ttl);
     });
 
     it("should return ttl zero if no ttl is provided in the constructor", () => {
       const store = new TimeStore();
 
-      expect(store.ttl).to.equal(0);
+      assert.equal(store.ttl, 0);
+    });
+  });
+
+  describe("get", () => {
+    it("should add a new identifier and then getting it back with the same TTL", () => {
+      const firedIdentifier = faker.random.alpha(10);
+      const store = new TimeStore();
+      store.add(firedIdentifier, { ttl: 10 });
+
+      const result = store.get(firedIdentifier)!;
+      assert.equal(typeof result.timestamp, "number");
+      assert.equal(result.ttl, 10);
+    });
+
+    it("should return null if there is no identifier matching", () => {
+      const firedIdentifier = faker.random.alpha(10);
+      const store = new TimeStore();
+
+      const result = store.get(firedIdentifier);
+      assert.equal(result, null);
     });
   });
 
@@ -101,7 +121,7 @@ describe("TimeStore", () => {
       setImmediate(() => store.add(firedIdentifier));
       await timers.setTimeout(utils.safeTTL(ttl));
 
-      expect(counter.count).to.equal(1);
+      assert.equal(counter.count, 1);
     });
 
     it("should Expire two identifiers with custom TTL not matching the TimeStore one", async() => {
@@ -116,16 +136,16 @@ describe("TimeStore", () => {
         .add(firstId, { ttl: 200 });
 
       await timers.setTimeout(utils.safeTTL(ttl));
-      expect(counter.count).to.equal(0);
+      assert.equal(counter.count, 0);
 
       await timers.setTimeout(500);
-      expect(counter.count).to.equal(2);
+      assert.equal(counter.count, 2);
 
       const { isMatching } = new IteratorMatcher()
         .expect(firstId)
         .expect(secondId)
         .execute(counter.identifiers(), { allowNoMatchingValues: false });
-      expect(isMatching).to.equal(true);
+      assert.equal(isMatching, true);
     });
 
     it("should Expire identifiers with mixed custom/default TTL", async() => {
@@ -143,16 +163,16 @@ describe("TimeStore", () => {
         .add(firstId, { ttl: 200 });
 
       await timers.setTimeout(utils.safeTTL(200));
-      expect(counter.count).to.equal(1);
+      assert.equal(counter.count, 1);
 
       await timers.setTimeout(1000);
-      expect(counter.count).to.equal(2);
+      assert.equal(counter.count, 2);
 
       const { isMatching } = new IteratorMatcher()
         .expect(firstId)
         .expect(secondId)
         .execute(counter.identifiers(), { allowNoMatchingValues: false });
-      expect(isMatching).to.equal(true, "identifiers must be in the right order");
+      assert.equal(isMatching, true, "identifiers must be in the right order");
     });
 
     it("should Renew a given identifier before it expire and then reset it's internal TTL", async() => {
@@ -171,14 +191,14 @@ describe("TimeStore", () => {
       setTimeout(() => store.add(firedIdentifier), ttl - 10);
       await timers.setTimeout(utils.safeTTL(ttl * 2));
 
-      expect(counter.count).to.equal(2);
-      expect(customEECounter.count).to.equal(1);
+      assert.equal(counter.count, 2);
+      assert.equal(customEECounter.count, 1);
 
       const { isMatching } = new IteratorMatcher()
         .expect(TimeStore.Renewed)
         .expect(TimeStore.Expired)
         .execute(counter.events(), { allowNoMatchingValues: false });
-      expect(isMatching).to.equal(true);
+      assert.equal(isMatching, true);
     });
 
     it("should not expire if no ttl is provided in the constructor", async() => {
@@ -194,7 +214,7 @@ describe("TimeStore", () => {
       const { isMatching } = new IteratorMatcher()
         .expect(TimeStore.Renewed)
         .execute(counter.events(), { allowNoMatchingValues: false });
-      expect(isMatching).to.equal(true);
+      assert.ok(isMatching);
     });
 
     it("should renew and make expire a given identifier that didn't had any ttl", async() => {
@@ -212,7 +232,7 @@ describe("TimeStore", () => {
         .expect(TimeStore.Renewed)
         .expect(TimeStore.Expired)
         .execute(counter.events(), { allowNoMatchingValues: false });
-      expect(isMatching).to.equal(true);
+      assert.ok(isMatching);
     });
 
     it("should keep the original identifier TTL when we renew it with keepIdentifierBirthTTL equal true", async() => {
@@ -230,7 +250,7 @@ describe("TimeStore", () => {
         .expect(TimeStore.Renewed)
         .expect(TimeStore.Expired)
         .execute(counter.events(), { allowNoMatchingValues: false });
-      expect(isMatching).to.equal(true);
+      assert.ok(isMatching);
     });
   });
 
@@ -245,7 +265,7 @@ describe("TimeStore", () => {
       setImmediate(() => store.addTsv(firedIdentifier));
       await timers.setTimeout(utils.safeTTL(ttl));
 
-      expect(counter.count).to.equal(1);
+      assert.equal(counter.count, 1);
     });
 
     it("should return the instance of the class as a response (A.K.A this)", () => {
@@ -254,7 +274,7 @@ describe("TimeStore", () => {
       const storeBis = store.addTsv(tSv()("foo"));
       store.clear();
 
-      expect(store).to.equal(storeBis);
+      assert.equal(store, storeBis);
     });
   });
 
@@ -272,13 +292,13 @@ describe("TimeStore", () => {
       setImmediate(() => store.clear());
 
       await timers.setTimeout(1_000);
-      expect(counter.count).to.equal(0);
+      assert.equal(counter.count, 0);
     });
 
     it("should return itself (same instance of object A.K.A this)", () => {
       const store = new TimeStore({ ttl: 500 });
 
-      expect(store.clear()).to.equal(store);
+      assert.equal(store.clear(), store);
     });
   });
 
@@ -302,27 +322,29 @@ describe("TimeStore", () => {
       // @ts-ignore
       const [identifier] = await once(store, TimeStore.Expired, AbortSignal.timeout(utils.safeTTL(ttl)));
 
-      expect(identifier).to.equal(expectedIdentifier);
-      expect(counter.count).to.equal(1);
+      assert.equal(identifier, expectedIdentifier);
+      assert.equal(counter.count, 1);
+      store.clear();
     });
 
     it("should return itself (same instance of object A.K.A this)", () => {
       const store = new TimeStore({ ttl: 500 });
 
-      expect(store.delete("foobar")).to.equal(store);
+      assert.equal(store.delete("foobar"), store);
+      store.clear();
     });
   });
 
   describe("size", () => {
     it("should return the TimeStore.identifiers size", () => {
       const store = new TimeStore();
-      expect(store.size).to.equal(0);
+      assert.equal(store.size, 0);
 
       store.add("random");
-      expect(store.size).to.equal(1);
+      assert.equal(store.size, 1);
 
       store.clear();
-      expect(store.size).to.equal(0);
+      assert.equal(store.size, 0);
     });
   });
 
@@ -331,13 +353,13 @@ describe("TimeStore", () => {
       const store = new TimeStore();
 
       store.add("random");
-      expect(store.has("random")).to.equal(true);
+      assert.ok(store.has("random"));
     });
 
     it("should return 'false' if the key does not exist", () => {
       const store = new TimeStore();
 
-      expect(store.has("random")).to.equal(false);
+      assert.equal(store.has("random"), false);
     });
   });
 });
