@@ -40,13 +40,18 @@ describe("TimeStore", () => {
       const expectedIdentifier = "foobar";
 
       const store = new TimeStore({
-        ttl: 100, eventEmitter
+        ttl: 100, eventEmitter, keepEventLoopAlive: true
       });
       store.add(expectedIdentifier);
 
-      // @ts-ignore
-      const [identifier] = await once(store, TimeStore.Expired, AbortSignal.timeout(500));
-      assert.equal(identifier, expectedIdentifier);
+      try {
+        // @ts-ignore
+        const [identifier] = await once(store, TimeStore.Expired, AbortSignal.timeout(500));
+        assert.equal(identifier, expectedIdentifier);
+      }
+      finally {
+        store.clear();
+      }
     });
 
     it("should expire all identifiers on process 'exit' event if expireIdentifiersOnProcessExit options is enabled", async() => {
@@ -308,7 +313,7 @@ describe("TimeStore", () => {
       const toDeleteIdentifier = faker.random.alpha(10);
       const ttl = 500;
 
-      const store = new TimeStore({ ttl });
+      const store = new TimeStore({ ttl, keepEventLoopAlive: true });
       const counter = new utils.EventEmitterCounter(store, [
         TimeStore.Expired,
         TimeStore.Renewed
@@ -319,12 +324,16 @@ describe("TimeStore", () => {
         .add(expectedIdentifier);
       setTimeout(() => store.delete(toDeleteIdentifier), 100);
 
-      // @ts-ignore
-      const [identifier] = await once(store, TimeStore.Expired, AbortSignal.timeout(utils.safeTTL(ttl)));
+      try {
+        // @ts-ignore
+        const [identifier] = await once(store, TimeStore.Expired, AbortSignal.timeout(utils.safeTTL(ttl)));
 
-      assert.equal(identifier, expectedIdentifier);
-      assert.equal(counter.count, 1);
-      store.clear();
+        assert.equal(identifier, expectedIdentifier);
+        assert.equal(counter.count, 1);
+      }
+      finally {
+        store.clear();
+      }
     });
 
     it("should return itself (same instance of object A.K.A this)", () => {
