@@ -34,5 +34,5 @@ export class EventEmitterCounter {
 }
 
 export function safeTTL(ttl: number) {
-  return ttl + (ttl / 10);
+  return ttl + (ttl / 5);
 }
