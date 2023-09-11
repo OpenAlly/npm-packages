@@ -123,7 +123,7 @@ describe("TimeStore", () => {
       const store = new TimeStore({ ttl });
       const counter = new utils.EventEmitterCounter(store, TimeStore.Expired);
 
-      setImmediate(() => store.add(firedIdentifier));
+      store.add(firedIdentifier);
       await timers.setTimeout(utils.safeTTL(ttl));
 
       assert.equal(counter.count, 1);
