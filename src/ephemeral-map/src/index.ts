@@ -114,7 +114,7 @@ export default class EphemeralMap<K extends TimeStoreIdentifier, V> extends Even
 
   get(key: K): V | undefined {
     if (this.refreshOnGet && this.has(key)) {
-      this[INTERNAL_STORE].add(key);
+      this[INTERNAL_STORE].add(key, { keepIdentifierBirthTTL: true });
     }
 
     return this.data.get(key);
