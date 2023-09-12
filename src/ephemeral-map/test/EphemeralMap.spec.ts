@@ -83,15 +83,21 @@ describe("EphemeralMap", () => {
 
   describe("get", () => {
     it("should refresh existing identifier if option refreshOnGet is enabled", () => {
-      const em = new EphemeralMap([["foo", "bar"]], {
-        ttl: 0,
+      const em = new EphemeralMap(void 0, {
+        ttl: 20,
         refreshOnGet: true
       });
+      EphemeralMap.set(em, ["foo", "bar"], { ttl: 0 });
+
       const counter = new utils.EventEmitterCounter(em, EphemeralMap.Renewed);
 
       const value = em.get("foo");
       assert.equal(value, "bar");
       assert.equal(counter.count, 1);
+
+      const timestore = em[INTERNAL_STORE];
+      const { ttl } = timestore.get("foo")!;
+      assert.equal(ttl, 0);
     });
   });
 
