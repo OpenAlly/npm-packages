@@ -7,8 +7,11 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/OpenAlly/npm-packages/tree/main/src/timestore">
-    <img src="https://img.shields.io/bundlephobia/min/@openally/timestore?style=for-the-badge" alt="size">
+  <a href="https://github.com/OpenAlly/npm-packages/src/timestore">
+    <img src="https://img.shields.io/github/package-json/v/OpenAlly/npm-packages/main/src/timestore?style=for-the-badge&label=version" alt="npm version">
+  </a>
+  <a href="https://github.com/OpenAlly/npm-packages/tree/main/src/LICENSE">
+    <img src="https://img.shields.io/github/license/OpenAlly/npm-packages?style=for-the-badge" alt="license">
   </a>
   <a href="https://github.com/OpenAlly/npm-packages/tree/main/src/timestore">
     <img src="https://img.shields.io/npm/dw/@openally/timestore?style=for-the-badge" alt="download">
@@ -18,7 +21,8 @@
   </a>
 </p>
 
-> **Warning** Internally it uses a Node.js timer. This library does not guarantee that the timers doesn't drift.
+> [!NOTE]
+> Internally it uses a Node.js timer. This library does not guarantee that the timers doesn't drift.
 
 ## Requirements
 - [Node.js](https://nodejs.org/en/) v16 or higher
@@ -51,8 +55,8 @@ store.on(
 );
 ```
 
-> **Warning** By default the internal timer we use in unreferenced to allow the event loop to properly stop.
->
+> [!IMPORTANT]
+> By default the internal timer we use in unreferenced to allow the event loop to properly stop.
 > You can modify this behaviour by enabling the `keepEventLoopAlive` options.
 
 ## API
@@ -115,7 +119,8 @@ interface ITimeStoreAddOptions {
 }
 ```
 
-> **Note** Adding an existing ID will reset its previous TTL/timestamp except if the `keepIdentifierBirthTTL` option is set to **true**.
+> [!NOTE]
+> Adding an existing ID will reset its previous TTL/timestamp except if the `keepIdentifierBirthTTL` option is set to **true**.
 
 ### addTsv(data: tSvResponse): this
 Add a value using a TimeStoreValue:
@@ -156,7 +161,8 @@ The TimeStore class broadcast two distinct events:
 - TimeStore.Expired (**when a given identifier expire**)
 - TimeStore.Renewed (**when an identifier TTL is Renewed with add() method**)
 
-> **Warning** Both value are Symbols
+> [!WARNING]
+> Both value are JavaScript Symbols primitive
 
 ## License
 MIT

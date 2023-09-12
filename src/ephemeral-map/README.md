@@ -66,7 +66,8 @@ The EphemeralMap EventEmitter broadcast two distinct events:
 - EphemeralMap.Expired (**when a given identifier expire**)
 - EphemeralMap.Renewed (**when an identifier TTL is Renewed with add() method**)
 
-> **Warning** Both value are Symbols
+> [!WARNING]
+> Both value are JavaScript Symbols primitive
 
 ## License
 MIT
