@@ -29,9 +29,5 @@
     "timeout"
   ],
   "author": "GENTILHOMME Thomas <gentilhomme.thomas@gmail.com>",
-  "license": "MIT",
-  "devDependencies": {
-    "@faker-js/faker": "^7.6.0",
-    "iterator-matcher": "^2.0.0"
-  }
+  "license": "MIT"
 }

@@ -1,11 +1,12 @@
 // Import Node.js Dependencies
-import { describe, it, test } from "node:test";
+import { describe, it, test, mock } from "node:test";
 import { EventEmitter, once } from "node:events";
 import assert from "node:assert/strict";
 import timers from "node:timers/promises";
 
 // Import Internal Dependencies
-import EphemeralMap, { tSv } from "../src/index";
+import EphemeralMap, { tSv, INTERNAL_STORE } from "../src/index";
+import * as utils from "./utils";
 
 describe("EphemeralMap", () => {
   test("should work like an ECMAScript Map", () => {
@@ -40,6 +41,17 @@ describe("EphemeralMap", () => {
     assert.deepEqual(pair, ["foo", "bar"]);
   });
 
+  test("should expose internal TimeStore under an exported Symbol", () => {
+    assert.ok(typeof INTERNAL_STORE === "symbol");
+    const em = new EphemeralMap(void 0, {
+      ttl: 20,
+      keepEventLoopAlive: true
+    });
+
+    const store = em[INTERNAL_STORE];
+    assert.equal(store.ttl, 20);
+  });
+
   describe("constructor", () => {
     it("should be an instanceof EventEmitter", () => {
       const em = new EphemeralMap();
@@ -66,6 +78,40 @@ describe("EphemeralMap", () => {
 
       assert.strictEqual(em.get("foo"), "bar");
       em.clear();
+    });
+  });
+
+  describe("get", () => {
+    it("should refresh existing identifier if option refreshOnGet is enabled", () => {
+      const em = new EphemeralMap([["foo", "bar"]], {
+        ttl: 0,
+        refreshOnGet: true
+      });
+      const counter = new utils.EventEmitterCounter(em, EphemeralMap.Renewed);
+
+      const value = em.get("foo");
+      assert.equal(value, "bar");
+      assert.equal(counter.count, 1);
+    });
+  });
+
+  describe("forEach", () => {
+    it("should trigger mocked fn on all identifiers available in the Map", () => {
+      const em = new EphemeralMap();
+      const callback = mock.fn();
+
+      em.set("foo", "bar");
+      em.set("nah", "lol");
+
+      em.forEach(callback);
+
+      const calls = callback.mock.calls;
+      assert.equal(calls.length, 2);
+      for (const call of calls) {
+        call.arguments.pop();
+      }
+      assert.deepEqual(calls[0].arguments, ["bar", "foo"]);
+      assert.deepEqual(calls[1].arguments, ["lol", "nah"]);
     });
   });
 
@@ -116,6 +162,13 @@ describe("EphemeralMap", () => {
       const expectedValue = { failure: 11 };
       assert.deepEqual(value, expectedValue);
       assert.deepEqual(em.get("foo"), expectedValue);
+    });
+
+    it("should return undefined if handler is empty (which is illegal with TS)", () => {
+      const em = new EphemeralMap();
+
+      const value = em.emplace("foo", {} as any);
+      assert.equal(value, undefined);
     });
   });
 

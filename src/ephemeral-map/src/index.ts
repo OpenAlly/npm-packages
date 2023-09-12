@@ -5,18 +5,18 @@ import { EventEmitter } from "node:events";
 import {
   TimeStore,
   tSv,
-  tSvResponse,
+  type tSvResponse,
   TSV_SYMBOL,
 
-  TimeStoreIdentifier,
-  ITimeStoreConstructorOptions
+  type TimeStoreIdentifier,
+  type ITimeStoreConstructorOptions
 } from "@openally/timestore";
-import { RequireAtLeastOne } from "type-fest";
+import type { RequireAtLeastOne } from "type-fest";
 
 // CONSTANTS
-const kTimeStore = Symbol("TimeStore");
+const INTERNAL_STORE = Symbol("TimeStore");
 
-export { tSv, tSvResponse };
+export { tSv, tSvResponse, INTERNAL_STORE };
 
 export interface IEphemeralMapOptions extends Omit<ITimeStoreConstructorOptions, "eventEmitter"> {
   refreshOnGet?: boolean;
@@ -33,7 +33,8 @@ export default class EphemeralMap<K extends TimeStoreIdentifier, V> extends Even
 
   private data: Map<K, V> = new Map();
   private refreshOnGet: boolean;
-  public [kTimeStore]: TimeStore;
+
+  public [INTERNAL_STORE]: TimeStore;
 
   constructor(
     iterable?: Iterable<readonly [K, V]>,
@@ -51,7 +52,7 @@ export default class EphemeralMap<K extends TimeStoreIdentifier, V> extends Even
     });
     timestore.on(TimeStore.Renewed, (id) => this.emit(TimeStore.Renewed, id));
 
-    Object.defineProperty(this, kTimeStore, {
+    Object.defineProperty(this, INTERNAL_STORE, {
       value: timestore
     });
 
@@ -63,7 +64,7 @@ export default class EphemeralMap<K extends TimeStoreIdentifier, V> extends Even
   }
 
   get ttl() {
-    return this[kTimeStore].ttl;
+    return this[INTERNAL_STORE].ttl;
   }
 
   get size() {
@@ -98,11 +99,11 @@ export default class EphemeralMap<K extends TimeStoreIdentifier, V> extends Even
 
   set(key: K | tSvResponse<K>, value: V) {
     if (isTsvResponse<K>(key)) {
-      this[kTimeStore].addTsv(key);
+      this[INTERNAL_STORE].addTsv(key);
 
       return this.data.set(key.value, value);
     }
-    this[kTimeStore].add(key);
+    this[INTERNAL_STORE].add(key);
 
     return this.data.set(key, value);
   }
@@ -113,14 +114,14 @@ export default class EphemeralMap<K extends TimeStoreIdentifier, V> extends Even
 
   get(key: K): V | undefined {
     if (this.refreshOnGet && this.has(key)) {
-      this[kTimeStore].add(key);
+      this[INTERNAL_STORE].add(key);
     }
 
     return this.data.get(key);
   }
 
   delete(key: K): boolean {
-    this[kTimeStore].delete(key);
+    this[INTERNAL_STORE].delete(key);
     const isDeleted = this.data.delete(key);
 
     return isDeleted;
@@ -148,7 +149,7 @@ export default class EphemeralMap<K extends TimeStoreIdentifier, V> extends Even
   }
 
   clear(): void {
-    this[kTimeStore].clear();
+    this[INTERNAL_STORE].clear();
     this.data.clear();
   }
 
