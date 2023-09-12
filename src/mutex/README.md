@@ -7,8 +7,11 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/OpenAlly/npm-packages/tree/main/src/mutex">
-    <img src="https://img.shields.io/bundlephobia/min/@openally/mutex?style=for-the-badge" alt="size">
+  <a href="https://github.com/OpenAlly/npm-packages/src/mutex">
+    <img src="https://img.shields.io/github/package-json/v/OpenAlly/npm-packages/main/src/mutex?style=for-the-badge&label=version" alt="npm version">
+  </a>
+  <a href="https://github.com/OpenAlly/npm-packages/tree/main/src/LICENSE">
+    <img src="https://img.shields.io/github/license/OpenAlly/npm-packages?style=for-the-badge" alt="license">
   </a>
   <a href="https://github.com/OpenAlly/npm-packages/tree/main/src/mutex">
     <img src="https://img.shields.io/npm/dw/@openally/mutex?style=for-the-badge" alt="download">
@@ -80,7 +83,8 @@ declare class Mutex {
 }
 ```
 
-> **Note** The maximum concurrency defined on the class is `1000`
+> [!NOTE]
+> The maximum concurrency defined on the class is `1000`
 
 <details>
 <summary>constructor(options: IMutexOptions)</summary>
