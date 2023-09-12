@@ -220,6 +220,8 @@ describe("TimeStore", () => {
         .expect(TimeStore.Renewed)
         .execute(counter.events(), { allowNoMatchingValues: false });
       assert.ok(isMatching);
+
+      store.clear();
     });
 
     it("should renew and make expire a given identifier that didn't had any ttl", async() => {
@@ -257,6 +259,25 @@ describe("TimeStore", () => {
         .execute(counter.events(), { allowNoMatchingValues: false });
       assert.ok(isMatching);
     });
+
+    it("should not expire identifier with explicit TTL equal to zero", async() => {
+      const ttl = 50;
+      const store = new TimeStore({ ttl });
+      const counter = new utils.EventEmitterCounter(store, [
+        TimeStore.Renewed,
+        TimeStore.Expired
+      ]);
+
+      store.add("bar", { ttl: 0 });
+      store.add("foo");
+      await timers.setTimeout(utils.safeTTL(ttl));
+
+      assert.equal(store.get("bar")?.ttl, 0);
+      const { isMatching } = new IteratorMatcher()
+        .expect(TimeStore.Expired)
+        .execute(counter.events(), { allowNoMatchingValues: false });
+      assert.ok(isMatching);
+    });
   });
 
   describe("addTsv", () => {
@@ -280,6 +301,13 @@ describe("TimeStore", () => {
       store.clear();
 
       assert.equal(store, storeBis);
+    });
+
+    it("should return the instance of the class and not add identifier if the object is not extended with Symbol TSV", () => {
+      const store = new TimeStore();
+      store.addTsv({} as any);
+
+      assert.equal(store.size, 0);
     });
   });
 

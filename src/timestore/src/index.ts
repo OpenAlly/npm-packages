@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
-
 // Import Node.js Dependencies
 import { EventEmitter } from "node:events";
 
@@ -70,6 +68,7 @@ export class TimeStore extends EventEmitter {
 
   constructor(options: ITimeStoreConstructorOptions = {}) {
     super();
+
     const {
       ttl,
       expireIdentifiersOnProcessExit = false,
