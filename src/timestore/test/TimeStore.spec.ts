@@ -6,12 +6,11 @@ import * as timers from "node:timers/promises";
 
 // Import Third-party Dependencies
 import { faker } from "@faker-js/faker";
-import { IteratorMatcher } from "iterator-matcher";
+import { IteratorMatcher, EventListener } from "iterator-matcher";
 import * as sinon from "sinon";
 
 // Import Internal Dependencies
 import { TimeStore, tSv } from "../src/index";
-import * as utils from "./utils";
 
 describe("TimeStore", () => {
   it("should have two Symbols property attached to listen to events", () => {
@@ -62,17 +61,17 @@ describe("TimeStore", () => {
         const store = new TimeStore({
           ttl, expireIdentifiersOnProcessExit: true
         });
-        const counter = new utils.EventEmitterCounter(store, TimeStore.Expired);
+        const counter = new EventListener(store, TimeStore.Expired);
 
         const numberOfElements = 5;
         for (let id = 0; id < numberOfElements; id++) {
-          store.add(faker.random.alpha(10));
+          store.add(faker.string.alpha(10));
         }
         setImmediate(() => process.exit(1));
 
-        await timers.setTimeout(utils.safeTTL(ttl));
+        await timers.setTimeout(safeTTL(ttl));
 
-        assert.equal(counter.count, numberOfElements);
+        assert.equal(counter.listenerCount, numberOfElements);
       }
       finally {
         processExitStub.restore();
@@ -82,7 +81,7 @@ describe("TimeStore", () => {
 
   describe("ttl", () => {
     it("should return the same TimeToLive value as provided in the constructor payload", () => {
-      const ttl = Number(faker.random.numeric(4));
+      const ttl = Number(faker.string.numeric(4));
       const store = new TimeStore({ ttl });
 
       assert.equal(store.ttl, ttl);
@@ -97,7 +96,7 @@ describe("TimeStore", () => {
 
   describe("get", () => {
     it("should add a new identifier and then getting it back with the same TTL", () => {
-      const firedIdentifier = faker.random.alpha(10);
+      const firedIdentifier = faker.string.alpha(10);
       const store = new TimeStore();
       store.add(firedIdentifier, { ttl: 10 });
 
@@ -107,7 +106,7 @@ describe("TimeStore", () => {
     });
 
     it("should return null if there is no identifier matching", () => {
-      const firedIdentifier = faker.random.alpha(10);
+      const firedIdentifier = faker.string.alpha(10);
       const store = new TimeStore();
 
       const result = store.get(firedIdentifier);
@@ -117,98 +116,98 @@ describe("TimeStore", () => {
 
   describe("add", () => {
     it("should Expire one identifier after the given default TTL class time", async() => {
-      const firedIdentifier = faker.random.alpha(10);
+      const firedIdentifier = faker.string.alpha(10);
       const ttl = 100;
 
       const store = new TimeStore({ ttl });
-      const counter = new utils.EventEmitterCounter(store, TimeStore.Expired);
+      const counter = new EventListener(store, TimeStore.Expired);
 
       store.add(firedIdentifier);
-      await timers.setTimeout(utils.safeTTL(ttl));
+      await timers.setTimeout(safeTTL(ttl));
 
-      assert.equal(counter.count, 1);
+      assert.equal(counter.listenerCount, 1);
     });
 
     it("should Expire two identifiers with custom TTL not matching the TimeStore one", async() => {
-      const [firstId, secondId] = [faker.random.alpha(10), faker.random.alpha(10)];
+      const [firstId, secondId] = [faker.string.alpha(10), faker.string.alpha(10)];
       const ttl = 100;
 
       const store = new TimeStore({ ttl });
-      const counter = new utils.EventEmitterCounter(store, TimeStore.Expired);
+      const counter = new EventListener(store, TimeStore.Expired);
 
       store
         .add(secondId, { ttl: 400 })
         .add(firstId, { ttl: 200 });
 
-      await timers.setTimeout(utils.safeTTL(ttl));
-      assert.equal(counter.count, 0);
+      await timers.setTimeout(safeTTL(ttl));
+      assert.equal(counter.listenerCount, 0);
 
       await timers.setTimeout(500);
-      assert.equal(counter.count, 2);
+      assert.equal(counter.listenerCount, 2);
 
       const { isMatching } = new IteratorMatcher()
         .expect(firstId)
         .expect(secondId)
-        .execute(counter.identifiers(), { allowNoMatchingValues: false });
+        .execute(counter.arguments(), { allowNoMatchingValues: false });
       assert.equal(isMatching, true);
     });
 
     it("should Expire identifiers with mixed custom/default TTL", async() => {
       const [firstId, secondId] = [
-        faker.random.alpha(10),
-        faker.random.alpha(10)
+        faker.string.alpha(10),
+        faker.string.alpha(10)
       ];
       const ttl = 500;
 
       const store = new TimeStore({ ttl });
-      const counter = new utils.EventEmitterCounter(store, TimeStore.Expired);
+      const counter = new EventListener(store, TimeStore.Expired);
 
       store
         .add(secondId)
         .add(firstId, { ttl: 200 });
 
-      await timers.setTimeout(utils.safeTTL(200));
-      assert.equal(counter.count, 1);
+      await timers.setTimeout(safeTTL(200));
+      assert.equal(counter.listenerCount, 1);
 
       await timers.setTimeout(1000);
-      assert.equal(counter.count, 2);
+      assert.equal(counter.listenerCount, 2);
 
       const { isMatching } = new IteratorMatcher()
         .expect(firstId)
         .expect(secondId)
-        .execute(counter.identifiers(), { allowNoMatchingValues: false });
+        .execute(counter.arguments(), { allowNoMatchingValues: false });
       assert.equal(isMatching, true, "identifiers must be in the right order");
     });
 
     it("should Renew a given identifier before it expire and then reset it's internal TTL", async() => {
-      const firedIdentifier = faker.random.alpha(10);
+      const firedIdentifier = faker.string.alpha(10);
       const eventEmitter = new EventEmitter();
       const ttl = 200;
 
       const store = new TimeStore({ ttl, eventEmitter });
-      const customEECounter = new utils.EventEmitterCounter(eventEmitter, TimeStore.Renewed);
-      const counter = new utils.EventEmitterCounter(store, [
+      const customEECounter = new EventListener(eventEmitter, TimeStore.Renewed);
+      const counter = new EventListener(store, [
         TimeStore.Expired,
         TimeStore.Renewed
       ]);
 
       store.add(firedIdentifier);
       setTimeout(() => store.add(firedIdentifier), ttl - 10);
-      await timers.setTimeout(utils.safeTTL(ttl * 2));
+      await timers.setTimeout(safeTTL(ttl * 2));
 
-      assert.equal(counter.count, 2);
-      assert.equal(customEECounter.count, 1);
+      assert.equal(counter.listenerCount, 2);
+      assert.equal(customEECounter.listenerCount, 1);
 
       const { isMatching } = new IteratorMatcher()
         .expect(TimeStore.Renewed)
         .expect(TimeStore.Expired)
-        .execute(counter.events(), { allowNoMatchingValues: false });
+        .execute(counter.names(), { allowNoMatchingValues: false });
       assert.equal(isMatching, true);
     });
 
     it("should not expire if no ttl is provided in the constructor", async() => {
       const store = new TimeStore();
-      const counter = new utils.EventEmitterCounter(store, [
+      const counter = new EventListener(store, [
         TimeStore.Renewed
       ]);
 
@@ -218,7 +217,7 @@ describe("TimeStore", () => {
 
       const { isMatching } = new IteratorMatcher()
         .expect(TimeStore.Renewed)
-        .execute(counter.events(), { allowNoMatchingValues: false });
+        .execute(counter.names(), { allowNoMatchingValues: false });
       assert.ok(isMatching);
 
       store.clear();
@@ -226,7 +225,7 @@ describe("TimeStore", () => {
 
     it("should renew and make expire a given identifier that didn't had any ttl", async() => {
       const store = new TimeStore();
-      const counter = new utils.EventEmitterCounter(store, [
+      const counter = new EventListener(store, [
         TimeStore.Renewed,
         TimeStore.Expired
       ]);
@@ -238,13 +237,13 @@ describe("TimeStore", () => {
       const { isMatching } = new IteratorMatcher()
         .expect(TimeStore.Renewed)
         .expect(TimeStore.Expired)
-        .execute(counter.events(), { allowNoMatchingValues: false });
+        .execute(counter.names(), { allowNoMatchingValues: false });
       assert.ok(isMatching);
     });
 
     it("should keep the original identifier TTL when we renew it with keepIdentifierBirthTTL equal true", async() => {
       const store = new TimeStore({ ttl: 50 });
-      const counter = new utils.EventEmitterCounter(store, [
+      const counter = new EventListener(store, [
         TimeStore.Renewed,
         TimeStore.Expired
       ]);
@@ -256,26 +255,26 @@ describe("TimeStore", () => {
       const { isMatching } = new IteratorMatcher()
         .expect(TimeStore.Renewed)
         .expect(TimeStore.Expired)
-        .execute(counter.events(), { allowNoMatchingValues: false });
+        .execute(counter.names(), { allowNoMatchingValues: false });
       assert.ok(isMatching);
     });
 
     it("should not expire identifier with explicit TTL equal to zero", async() => {
       const ttl = 50;
       const store = new TimeStore({ ttl });
-      const counter = new utils.EventEmitterCounter(store, [
+      const counter = new EventListener(store, [
         TimeStore.Renewed,
         TimeStore.Expired
       ]);
 
       store.add("bar", { ttl: 0 });
       store.add("foo");
-      await timers.setTimeout(utils.safeTTL(ttl));
+      await timers.setTimeout(safeTTL(ttl));
 
       assert.equal(store.get("bar")?.ttl, 0);
       const { isMatching } = new IteratorMatcher()
         .expect(TimeStore.Expired)
-        .execute(counter.events(), { allowNoMatchingValues: false });
+        .execute(counter.names(), { allowNoMatchingValues: false });
       assert.ok(isMatching);
     });
   });
@@ -283,15 +282,15 @@ describe("TimeStore", () => {
   describe("addTsv", () => {
     it("should Expire one identifier after the given default TTL class time", async() => {
       const ttl = 100;
-      const firedIdentifier = tSv({ ttl })(faker.random.alpha(10));
+      const firedIdentifier = tSv({ ttl })(faker.string.alpha(10));
 
       const store = new TimeStore({ ttl });
-      const counter = new utils.EventEmitterCounter(store, TimeStore.Expired);
+      const counter = new EventListener(store, TimeStore.Expired);
 
       setImmediate(() => store.addTsv(firedIdentifier));
-      await timers.setTimeout(utils.safeTTL(ttl));
+      await timers.setTimeout(safeTTL(ttl));
 
-      assert.equal(counter.count, 1);
+      assert.equal(counter.listenerCount, 1);
     });
 
     it("should return the instance of the class as a response (A.K.A this)", () => {
@@ -314,18 +313,18 @@ describe("TimeStore", () => {
   describe("clear", () => {
     it("should clear all registered identifiers and clear the inner store Node.js timeout", async() => {
       const store = new TimeStore({ ttl: 500 });
-      const counter = new utils.EventEmitterCounter(store, [
+      const counter = new EventListener(store, [
         TimeStore.Expired,
         TimeStore.Renewed
       ]);
 
       store
-        .add(faker.random.alpha(5))
-        .add(faker.random.alpha(5));
+        .add(faker.string.alpha(5))
+        .add(faker.string.alpha(5));
       setImmediate(() => store.clear());
 
       await timers.setTimeout(1_000);
-      assert.equal(counter.count, 0);
+      assert.equal(counter.listenerCount, 0);
     });
 
     it("should return itself (same instance of object A.K.A this)", () => {
@@ -337,12 +336,12 @@ describe("TimeStore", () => {
 
   describe("delete", () => {
     it("should delete the first identifier and reschedule the timeout second one", async() => {
-      const expectedIdentifier = faker.random.alpha(10);
-      const toDeleteIdentifier = faker.random.alpha(10);
+      const expectedIdentifier = faker.string.alpha(10);
+      const toDeleteIdentifier = faker.string.alpha(10);
       const ttl = 500;
 
       const store = new TimeStore({ ttl, keepEventLoopAlive: true });
-      const counter = new utils.EventEmitterCounter(store, [
+      const counter = new EventListener(store, [
         TimeStore.Expired,
         TimeStore.Renewed
       ]);
@@ -354,10 +353,10 @@ describe("TimeStore", () => {
 
       try {
         // @ts-ignore
-        const [identifier] = await once(store, TimeStore.Expired, AbortSignal.timeout(utils.safeTTL(ttl)));
+        const [identifier] = await once(store, TimeStore.Expired, AbortSignal.timeout(safeTTL(ttl)));
 
         assert.equal(identifier, expectedIdentifier);
-        assert.equal(counter.count, 1);
+        assert.equal(counter.listenerCount, 1);
       }
       finally {
         store.clear();
@@ -400,3 +399,7 @@ describe("TimeStore", () => {
     });
   });
 });
+
+function safeTTL(ttl: number) {
+  return ttl + (ttl / 5);
+}

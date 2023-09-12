@@ -4,9 +4,11 @@ import { EventEmitter, once } from "node:events";
 import assert from "node:assert/strict";
 import timers from "node:timers/promises";
 
+// Import Third-party Dependencies
+import { EventListener } from "iterator-matcher";
+
 // Import Internal Dependencies
 import EphemeralMap, { tSv, INTERNAL_STORE } from "../src/index";
-import * as utils from "./utils";
 
 describe("EphemeralMap", () => {
   test("should work like an ECMAScript Map", () => {
@@ -89,11 +91,11 @@ describe("EphemeralMap", () => {
       });
       EphemeralMap.set(em, ["foo", "bar"], { ttl: 0 });
 
-      const counter = new utils.EventEmitterCounter(em, EphemeralMap.Renewed);
+      const eeListener = new EventListener(em, EphemeralMap.Renewed);
 
       const value = em.get("foo");
       assert.equal(value, "bar");
-      assert.equal(counter.count, 1);
+      assert.equal(eeListener.listenerCount, 1);
 
       const timestore = em[INTERNAL_STORE];
       const { ttl } = timestore.get("foo")!;
