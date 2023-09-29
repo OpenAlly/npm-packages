@@ -15,7 +15,8 @@
     "src/timestore",
     "src/ephemeral-map",
     "src/mutex",
-    "src/result"
+    "src/result",
+    "src/auto-url"
   ],
   "license": "MIT",
   "bugs": {

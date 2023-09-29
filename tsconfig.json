@@ -12,6 +12,9 @@
     },
     {
       "path": "./src/result"
+    },
+    {
+      "path": "./src/auto-url"
     }
   ]
 }
