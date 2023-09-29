@@ -24,7 +24,7 @@
   },
   "homepage": "https://github.com/OpenAlly/npm-packages#readme",
   "devDependencies": {
-    "@faker-js/faker": "^8.0.2",
+    "@faker-js/faker": "^8.1.0",
     "@nodesecure/eslint-config": "^1.8.0",
     "@types/node": "^20.6.0",
     "c8": "^8.0.1",
