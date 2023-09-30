@@ -1,6 +1,6 @@
 {
   "name": "@openally/auto-url",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Utility to build WHATWG URL from an object payload",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
