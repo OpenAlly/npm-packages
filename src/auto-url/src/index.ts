@@ -2,11 +2,11 @@
 import * as utils from "./utils.js";
 
 export type autoURLTransformCallback = (value: string) => string;
-export type autoURLTransformConfig<T extends string> = Record<T, autoURLTransformCallback>;
+export type autoURLTransformConfig<T extends string> = Partial<Record<T, autoURLTransformCallback>>;
 
 export function autoURL<T extends string>(
   source: string | URL,
-  payload?: Record<T, any> | Iterable<[T, any]>,
+  payload?: Partial<Record<T, any>> | Iterable<[T, any]>,
   transformersConfig: autoURLTransformConfig<T> = Object.create(null)
 ): URL {
   if (!source) {
