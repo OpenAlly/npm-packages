@@ -111,12 +111,14 @@ export class TimeStore extends EventEmitter {
     identifier: TimeStoreIdentifier,
     options: ITimeStoreAddOptions = {}
   ) {
-    const { ttl = this.#ttl, keepIdentifierBirthTTL = false } = options;
+    const { keepIdentifierBirthTTL = false } = options;
 
     const originalIdentifier = this.#identifiers.get(identifier);
     const hasIdentifier = typeof originalIdentifier !== "undefined";
+    const keepIdentifierBirth = hasIdentifier && keepIdentifierBirthTTL;
 
-    const timestamp = hasIdentifier && keepIdentifierBirthTTL ? originalIdentifier.timestamp : Date.now();
+    const ttl = keepIdentifierBirth ? originalIdentifier.ttl : (options.ttl ?? this.#ttl);
+    const timestamp = keepIdentifierBirth ? originalIdentifier.timestamp : Date.now();
     if (!keepIdentifierBirthTTL) {
       this.#identifiers.set(identifier, { timestamp, ttl });
     }
