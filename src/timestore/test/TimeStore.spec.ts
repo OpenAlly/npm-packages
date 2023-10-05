@@ -277,6 +277,25 @@ describe("TimeStore", () => {
         .execute(counter.names(), { allowNoMatchingValues: false });
       assert.ok(isMatching);
     });
+
+    it("should not expire an identifier with a birth TTL of zero when Renewed with keepIdentifierBirthTTL option", async() => {
+      const ttl = 50;
+      const store = new TimeStore({ ttl });
+      const counter = new EventListener(store, [
+        TimeStore.Renewed,
+        TimeStore.Expired
+      ]);
+
+      store.add("bar", { ttl: 0 });
+      store.add("bar", { keepIdentifierBirthTTL: true });
+      await timers.setTimeout(safeTTL(ttl));
+
+      assert.equal(store.get("bar")?.ttl, 0);
+      const { isMatching } = new IteratorMatcher()
+        .expect(TimeStore.Renewed)
+        .execute(counter.names(), { allowNoMatchingValues: false });
+      assert.ok(isMatching);
+    });
   });
 
   describe("addTsv", () => {
