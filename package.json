@@ -31,7 +31,7 @@
     "cross-env": "^7.0.3",
     "glob": "^10.3.4",
     "iterator-matcher": "^2.1.0",
-    "sinon": "^16.0.0",
+    "sinon": "^16.1.1",
     "tsup": "^7.2.0",
     "tsx": "^3.13.0",
     "typescript": "^4.9.5"
