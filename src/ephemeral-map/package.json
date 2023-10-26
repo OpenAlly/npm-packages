@@ -27,6 +27,6 @@
   "license": "MIT",
   "dependencies": {
     "@openally/timestore": "^1.5.1",
-    "type-fest": "^4.3.1"
+    "type-fest": "^4.6.0"
   }
 }
