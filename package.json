@@ -27,13 +27,13 @@
     "@faker-js/faker": "^8.1.0",
     "@nodesecure/eslint-config": "^1.8.0",
     "@types/node": "^20.7.2",
-    "c8": "^8.0.1",
+    "c8": "^9.1.0",
     "cross-env": "^7.0.3",
     "glob": "^10.3.4",
     "iterator-matcher": "^2.1.0",
-    "sinon": "^16.0.0",
-    "tsup": "^7.2.0",
-    "tsx": "^3.13.0",
-    "typescript": "^4.9.5"
+    "sinon": "^17.0.1",
+    "tsup": "^8.0.2",
+    "tsx": "^4.7.1",
+    "typescript": "^5.4.2"
   }
 }
