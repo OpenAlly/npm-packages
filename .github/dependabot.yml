@@ -3,29 +3,63 @@ updates:
   - package-ecosystem: github-actions
     directory: /
     schedule:
-      interval: daily
+      interval: "monthly"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
 
   - package-ecosystem: npm
     directory: /
+    versioning-strategy: widen
     schedule:
-      interval: daily
+      interval: "weekly"
+    groups:
+      dependencies:
+        dependency-type: "production"
+      development-dependencies:
+        dependency-type: "development"
 
   - package-ecosystem: npm
     directory: /src/ephemeral-map
+    versioning-strategy: widen
     schedule:
-      interval: daily
+      interval: "weekly"
+    groups:
+      dependencies:
+        dependency-type: "production"
+      development-dependencies:
+        dependency-type: "development"
 
   - package-ecosystem: npm
     directory: /src/mutex
+    versioning-strategy: widen
     schedule:
-      interval: daily
+      interval: "weekly"
+    groups:
+      dependencies:
+        dependency-type: "production"
+      development-dependencies:
+        dependency-type: "development"
 
   - package-ecosystem: npm
     directory: /src/result
+    versioning-strategy: widen
     schedule:
-      interval: daily
+      interval: "weekly"
+    groups:
+      dependencies:
+        dependency-type: "production"
+      development-dependencies:
+        dependency-type: "development"
 
   - package-ecosystem: npm
     directory: /src/timestore
+    versioning-strategy: widen
     schedule:
-      interval: daily
+      interval: "weekly"
+    groups:
+      dependencies:
+        dependency-type: "production"
+      development-dependencies:
+        dependency-type: "development"
