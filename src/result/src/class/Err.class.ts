@@ -26,12 +26,11 @@ export class ErrImpl<E> {
   }
 
   unwrap(): never {
-    const errorOptions = this.val instanceof Error ? { cause: this.val } : {};
+    if (this.val instanceof Error) {
+      throw this.val;
+    }
 
-    throw new Error(
-      `Tried to unwrap Error: ${toString(this.val)}\n${this._stack}`,
-      errorOptions
-    );
+    throw new Error(`Tried to unwrap Error: ${toString(this.val)}\n${this._stack}`);
   }
 
   map(_mapper: unknown): ErrImpl<E> {
