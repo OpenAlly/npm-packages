@@ -90,14 +90,14 @@ describe("Err", () => {
   });
 
   describe("unwrap", () => {
-    it("should throw when unwraping an Err value", () => {
+    it("should unwrap the original Error with no mutation", () => {
       assert.throws(
-        () => Err("oops").unwrap(),
-        "oops"
+        () => Err(new Error("oops")).unwrap(),
+        { message: "oops" }
       );
     });
 
-    it("should throw when unwraping an Err value and display the error cause (value is an Error)", () => {
+    it("should unwrap the origin CustomError with no mutation (and with the same Behavior as for a classical Error)", () => {
       class CustomError extends Error {
         foo: string;
 
@@ -109,7 +109,14 @@ describe("Err", () => {
 
       assert.throws(
         () => Err(new CustomError("oops")).unwrap(),
-        JSON.stringify({ foo: "bar" })
+        { message: "oops" }
+      );
+    });
+
+    it("should wrap the literal value into a new Error", () => {
+      assert.throws(
+        () => Err(10).unwrap(),
+        { message: /^Tried to unwrap Error: 10.*/g }
       );
     });
   });
@@ -123,8 +130,8 @@ describe("Err", () => {
   describe("map", () => {
     it("should not map on Err value and keep original boxed Err", () => {
       assert.throws(
-        () => Err("oops").map(() => 1).unwrap(),
-        "oops"
+        () => Err(new Error("oops")).map(() => 1).unwrap(),
+        { message: "oops" }
       );
     });
   });
@@ -132,8 +139,8 @@ describe("Err", () => {
   describe("andThen", () => {
     it("should not map/updated boxed value", () => {
       assert.throws(
-        () => Err("oops").andThen(() => Ok(1)).unwrap(),
-        "oops"
+        () => Err(new Error("oops")).andThen(() => Ok(1)).unwrap(),
+        { message: "oops" }
       );
     });
   });
@@ -141,8 +148,8 @@ describe("Err", () => {
   describe("mapErr", () => {
     it("should map and return a new Err value", () => {
       assert.throws(
-        () => Err("oops").mapErr(() => "oh no!").unwrap(),
-        "oh no!"
+        () => Err("oops").mapErr(() => new Error("oh no!")).unwrap(),
+        { message: "oh no!" }
       );
     });
   });
@@ -165,7 +172,7 @@ describe("Result", () => {
       assert.ok(!result.ok);
       assert.throws(
         () => result.unwrap(),
-        "oops"
+        { message: "oops" }
       );
     });
   });
