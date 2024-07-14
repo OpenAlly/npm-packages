@@ -1,0 +1,10 @@
+{
+  "user": {
+    "name": "John Doe",
+    "nested": {
+      "deep": {
+        "value": 42
+      }
+    }
+  }
+}
