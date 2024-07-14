@@ -16,7 +16,8 @@
     "src/ephemeral-map",
     "src/mutex",
     "src/result",
-    "src/auto-url"
+    "src/auto-url",
+    "src/config"
   ],
   "license": "MIT",
   "bugs": {
