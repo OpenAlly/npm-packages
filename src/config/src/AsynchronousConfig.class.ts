@@ -24,8 +24,6 @@ const kDefaultSchema = {
   additionalProperties: true
 };
 
-type WithRequired<T, K extends keyof T> = T & Required<Pick<T, K>>
-
 export interface ConfigOptions<T> {
   createOnNoEntry?: boolean;
   autoReload?: boolean;
@@ -46,15 +44,19 @@ export class AsynchronousConfig<T extends Record<string, any> = Record<string, a
   #createOnNoEntry: boolean;
   #autoReload: boolean;
   #writeOnSet: boolean;
+  #scheduledLazyWrite: NodeJS.Immediate;
   #autoReloadActivated = false;
   #configHasBeenRead = false;
   #subscriptionObservers: ([string, ZenObservable.SubscriptionObserver<any>])[] = [];
-  #jsonSchema?: object;
+  #jsonSchema?: JSONSchemaType<T>;
   #cleanupTimeout: NodeJS.Timeout;
-  #watcherSignal = new AbortController();
-  #fs!: WithRequired<ConfigOptions<T>, "fs">["fs"];
+  #watcher: nodeFs.FSWatcher;
+  #fs: Required<ConfigOptions<T>>["fs"];
 
-  constructor(configFilePath: string, options: ConfigOptions<T> = Object.create(null)) {
+  constructor(
+    configFilePath: string,
+    options: ConfigOptions<T> = Object.create(null)
+  ) {
     super();
     if (typeof configFilePath !== "string") {
       throw new TypeError("The configPath must be a string");
@@ -131,15 +133,16 @@ export class AsynchronousConfig<T extends Record<string, any> = Record<string, a
     if (isDeepStrictEqual(this[kPayloadIdentifier], newPayload)) {
       return;
     }
-    const isValidPayload = this[kSchemaIdentifier](structuredClone(newPayload));
-    if (isValidPayload === false) {
+
+    const tempPayload = structuredClone(newPayload);
+    if (this[kSchemaIdentifier](tempPayload) === false) {
       const ajvErrors = utils.formatAjvErrors(this[kSchemaIdentifier].errors);
       const errorMessage = `Config.payload (setter) - AJV Validation failed with error(s) => ${ajvErrors}`;
 
       throw new Error(errorMessage);
     }
 
-    this[kPayloadIdentifier] = newPayload;
+    this[kPayloadIdentifier] = tempPayload;
     for (const [fieldPath, subscriptionObservers] of this.#subscriptionObservers) {
       subscriptionObservers.next(this.get(fieldPath));
     }
@@ -185,8 +188,7 @@ export class AsynchronousConfig<T extends Record<string, any> = Record<string, a
       JSONSchema = JSON.parse(schemaFileContent);
     }
     catch (err) {
-      const fileExists = Reflect.has(err, "code") && err.code !== "ENOENT";
-      if (fileExists) {
+      if (Reflect.has(err, "code") && err.code !== "ENOENT") {
         throw err;
       }
 
@@ -198,6 +200,9 @@ export class AsynchronousConfig<T extends Record<string, any> = Record<string, a
 
     if (!this.#configHasBeenRead) {
       // Cleanup closed subscription every second
+      if (this.#cleanupTimeout) {
+        clearInterval(this.#cleanupTimeout);
+      }
       this.#cleanupTimeout = setInterval(() => {
         this.#subscriptionObservers = this.#subscriptionObservers.filter(
           ([, subscriptionObservers]) => !subscriptionObservers.closed
@@ -207,7 +212,14 @@ export class AsynchronousConfig<T extends Record<string, any> = Record<string, a
     }
 
     this.#configHasBeenRead = true;
-    this.payload = JSONConfig;
+
+    try {
+      this.payload = JSONConfig;
+    }
+    catch (error) {
+      this.#configHasBeenRead = false;
+      throw error;
+    }
 
     // Write the configuraton on the disk for the first time (if there is no one available!).
     if (writeOnDisk) {
@@ -217,7 +229,7 @@ export class AsynchronousConfig<T extends Record<string, any> = Record<string, a
         this.removeListener("configWritten", autoReload);
       });
       this.once("configWritten", autoReload);
-      this.lazyWriteOnDisk();
+      this.#lazyWriteOnDisk();
     }
     else {
       this.setupAutoReload();
@@ -235,23 +247,36 @@ export class AsynchronousConfig<T extends Record<string, any> = Record<string, a
       return false;
     }
 
-    this.#fs.watch(this.#configFilePath, { signal: this.#watcherSignal.signal }, async() => {
-      try {
-        if (!this.#configHasBeenRead) {
-          return;
+    this.#watcher = this.#fs.watch(
+      this.#configFilePath,
+      { persistent: false },
+      async() => {
+        try {
+          if (!this.#configHasBeenRead) {
+            return;
+          }
+          await this.read();
+          this.emit("reload");
         }
-        await this.read();
-        this.emit("reload");
+        catch (err) {
+          this.emit("error", err);
+        }
       }
-      catch (err) {
-        this.emit("error", err);
-      }
-    });
+    );
     this.#autoReloadActivated = true;
 
     this.emit("watcherInitialized");
 
     return true;
+  }
+
+  observableOf(fieldPath: string, depth = Infinity) {
+    const fieldValue = this.get(fieldPath, depth);
+
+    return new Observable((observer) => {
+      observer.next(fieldValue);
+      this.#subscriptionObservers.push([fieldPath, observer]);
+    });
   }
 
   get<Y = any>(fieldPath: string, depth = Infinity): Y | null {
@@ -273,15 +298,6 @@ export class AsynchronousConfig<T extends Record<string, any> = Record<string, a
     return value;
   }
 
-  observableOf(fieldPath: string, depth = Infinity) {
-    const fieldValue = this.get(fieldPath, depth);
-
-    return new Observable((observer) => {
-      observer.next(fieldValue);
-      this.#subscriptionObservers.push([fieldPath, observer]);
-    });
-  }
-
   set(fieldPath: string, fieldValue: any) {
     if (!this.#configHasBeenRead) {
       throw new Error("You must read config first before setting a field!");
@@ -291,10 +307,8 @@ export class AsynchronousConfig<T extends Record<string, any> = Record<string, a
     }
 
     this.payload = utils.deepSet<T>(this.payload, fieldPath, fieldValue);
-    Object.assign(this.payload, { [fieldPath]: fieldValue });
-
     if (this.#writeOnSet) {
-      this.lazyWriteOnDisk();
+      this.#lazyWriteOnDisk();
     }
 
     return this;
@@ -305,45 +319,42 @@ export class AsynchronousConfig<T extends Record<string, any> = Record<string, a
       throw new Error("You must read config first before writing it on the disk!");
     }
 
-    const data = this.#isTOML ? TOML.stringify(this[kPayloadIdentifier]) : JSON.stringify(this[kPayloadIdentifier], null, 2);
+    const data = this.#isTOML ?
+      TOML.stringify(this[kPayloadIdentifier]) :
+      JSON.stringify(this[kPayloadIdentifier], null, 2);
     await this.#fs.promises.writeFile(this.#configFilePath, data);
 
     this.emit("configWritten");
   }
 
-  lazyWriteOnDisk() {
-    if (!this.#configHasBeenRead) {
-      throw new Error("You must read config first before writing it on the disk!");
+  #lazyWriteOnDisk(): void {
+    if (this.#scheduledLazyWrite) {
+      clearImmediate(this.#scheduledLazyWrite);
     }
-
-    setImmediate(async() => {
-      try {
-        await this.writeOnDisk();
-      }
-      catch (error) {
-        this.emit("error", error);
-      }
-    });
+    this.#scheduledLazyWrite = setImmediate(
+      () => this.writeOnDisk().catch((error) => this.emit("error", error))
+    );
   }
-  async close() {
+
+  async close(): Promise<void> {
     if (!this.#configHasBeenRead) {
-      throw new Error("Cannot close unreaded configuration");
+      return;
     }
 
+    clearImmediate(this.#scheduledLazyWrite);
     if (this.#autoReloadActivated) {
-      this.#watcherSignal.abort();
+      this.#watcher.close();
       this.#autoReloadActivated = false;
     }
-
-    await this.writeOnDisk();
-    this.#configHasBeenRead = false;
 
     for (const [, subscriptionObservers] of this.#subscriptionObservers) {
       subscriptionObservers.complete();
     }
     this.#subscriptionObservers = [];
-
     clearInterval(this.#cleanupTimeout);
+
+    await this.writeOnDisk();
+    this.#configHasBeenRead = false;
 
     this.emit("close");
   }
