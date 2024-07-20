@@ -92,6 +92,14 @@ Ok(1).unwrapOr(5); // 1
 Err("oops").unwrapOr(5); // 5
 ```
 
+### unwrapOrElse
+Same as `unwrapOr` but use a lazy function for the default value.
+
+```ts
+Ok(1).unwrapOrElse(() => 5); // 1
+Err("oops").unwrapOrElse(() => 5); // 5
+```
+
 ### safeUnwrap
 Same as `unwrap` but only available for Ok (useful for type safety).
 
@@ -102,6 +110,30 @@ Map value for Ok. Do nothing with Err (use `mapErr` instead).
 Ok(1)
   .map((v) => v + 1)
   .unwrap(); // 2
+```
+
+### mapOr
+Map and unwrap:
+- Use default value for Error
+- Use mapper for Ok
+
+```ts
+Ok(1)
+  .mapOr(1, (val) => val * 2); // 2
+
+Err(new Error("oops"))
+  .mapOr(1, (val) => val * 2); // 1
+```
+
+### mapOrElse
+Same as `mapOr` but use a callback returning error for default value
+
+```ts
+Err(new Error("oops"))
+  .mapOrElse(
+    (err) => err.message),
+    (val) => val * 2
+  ); // oops
 ```
 
 ### mapErr

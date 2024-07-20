@@ -13,11 +13,15 @@ export class OkImpl<T> {
     this.val = val;
   }
 
+  unwrap(): T {
+    return this.val;
+  }
+
   unwrapOr(_val: unknown): T {
     return this.val;
   }
 
-  unwrap(): T {
+  unwrapOrElse(_mapper: unknown): T {
     return this.val;
   }
 
@@ -29,15 +33,29 @@ export class OkImpl<T> {
     return new OkImpl(mapper(this.val));
   }
 
-  andThen<T2>(mapper: (val: T) => OkImpl<T2>): OkImpl<T2>;
-  andThen<E2>(mapper: (val: T) => ErrImpl<E2>): Result<T, E2>;
-  andThen<T2, E2>(mapper: (val: T) => Result<T2, E2>): Result<T2, E2>;
-  andThen<T2, E2>(mapper: (val: T) => Result<T2, E2>): Result<T2, E2> {
+  mapOr<U>(
+    _default_: U,
+    mapper: (val: T) => U
+  ): U {
+    return mapper(this.val);
+  }
+
+  mapOrElse<U>(
+    _default_: (error: unknown) => U,
+    mapper: (val: T) => U
+  ): U {
     return mapper(this.val);
   }
 
   mapErr(_mapper: unknown): OkImpl<T> {
     return this;
+  }
+
+  andThen<T2>(mapper: (val: T) => OkImpl<T2>): OkImpl<T2>;
+  andThen<E2>(mapper: (val: T) => ErrImpl<E2>): Result<T, E2>;
+  andThen<T2, E2>(mapper: (val: T) => Result<T2, E2>): Result<T2, E2>;
+  andThen<T2, E2>(mapper: (val: T) => Result<T2, E2>): Result<T2, E2> {
+    return mapper(this.val);
   }
 }
 

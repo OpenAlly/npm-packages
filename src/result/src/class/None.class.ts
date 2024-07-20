@@ -5,16 +5,33 @@ export class NoneImpl {
   readonly some = false;
   readonly none = true;
 
-  unwrapOr<T2>(val: T2): T2 {
-    return val;
-  }
-
   unwrap(): never {
     throw new Error("Tried to unwrap None");
   }
 
+  unwrapOr<T2>(val: T2): T2 {
+    return val;
+  }
+
+  unwrapOrElse<T2>(f: () => T2): T2 {
+    return f();
+  }
+
   map(_mapper: unknown): None {
     return this;
+  }
+
+  mapOr<T2>(
+    default_: T2,
+    _mapper: unknown): T2 {
+    return default_;
+  }
+
+  mapOrElse<U>(
+    default_: () => U,
+    _mapper: unknown
+  ): U {
+    return default_();
   }
 
   andThen(op: unknown): None {
