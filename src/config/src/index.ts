@@ -1,6 +1,2 @@
 // Import Internal Dependencies
-import { AsynchronousConfig } from "./asyncConfig.js";
-
-export {
-  AsynchronousConfig
-};
+export * from "./AsynchronousConfig.class.js";

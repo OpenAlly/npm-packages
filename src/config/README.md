@@ -43,7 +43,7 @@ Create a simple json file for your project
 Now, create a new Configuration instance and read it
 
 ```js
-import { AsynchronousConfig  } from "@openally/config";
+import { AsynchronousConfig } from "@openally/config";
 
 const config = new AsynchronousConfig("./path/to/config.json");
 await config.read();
@@ -98,7 +98,7 @@ Available options are:
 Will read the local configuration on disk. A default `payload` value can be provided in case the file doesn't exist !
 
 > [!CAUTION]
-> When the file doesn't exist, the configuration is written at the next loop iteration (with `lazyWriteOnDisk`).
+> When the file doesn't exist, the configuration is written at the next loop iteration
 
 ### `AsynchronousConfig.setupHotReload(): void`
 
@@ -155,12 +155,6 @@ Return a deep clone of the configuration payload.
 ### `AsynchronousConfig.writeOnDisk(): Promise<void>`
 
 Write the configuration payload on the local disk.
-
-### `AsynchronousConfig.lazyWriteOnDisk(): void`
-
-Write the configuration payload on the local disk at the next loop iteration.
-
-Use `configWritten` event to know when the configuration has been written on the disk.
 
 ## License
 MIT
