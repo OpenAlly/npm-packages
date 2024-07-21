@@ -21,10 +21,6 @@ export class ErrImpl<E> {
     this._stack = stackLines.join("\n");
   }
 
-  unwrapOr<T2>(val: T2): T2 {
-    return val;
-  }
-
   unwrap(): never {
     if (this.val instanceof Error) {
       throw this.val;
@@ -33,16 +29,38 @@ export class ErrImpl<E> {
     throw new Error(`Tried to unwrap Error: ${toString(this.val)}\n${this._stack}`);
   }
 
+  unwrapOr<T2>(val: T2): T2 {
+    return val;
+  }
+
+  unwrapOrElse<T2>(mapper: (val: E) => T2): T2 {
+    return mapper(this.val);
+  }
+
   map(_mapper: unknown): ErrImpl<E> {
     return this;
   }
 
-  andThen(op: unknown): ErrImpl<E> {
-    return this;
+  mapOr<U>(
+    default_: U,
+    _mapper: unknown
+  ): U {
+    return default_;
+  }
+
+  mapOrElse<U>(
+    default_: (error: E) => U,
+    _mapper: unknown
+  ): U {
+    return default_(this.val);
   }
 
   mapErr<E2>(mapper: (err: E) => E2): ErrImpl<E2> {
     return new ErrImpl(mapper(this.val));
+  }
+
+  andThen(op: unknown): ErrImpl<E> {
+    return this;
   }
 
   get stack(): string {

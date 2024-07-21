@@ -18,10 +18,6 @@ export class SomeImpl<T> {
     this.val = val;
   }
 
-  unwrapOr(_val: unknown): T {
-    return this.val;
-  }
-
   expect(_msg: string): T {
     return this.val;
   }
@@ -30,21 +26,44 @@ export class SomeImpl<T> {
     return this.val;
   }
 
-  map<T2>(mapper: (val: T) => T2): SomeImpl<T2> {
-    return Some(mapper(this.val));
+  unwrapOr(_val: unknown): T {
+    return this.val;
   }
 
-  andThen<T2>(mapper: (val: T) => Option<T2>): Option<T2> {
-    return mapper(this.val);
-  }
-
-  // eslint-disable-next-line handle-callback-err
-  toResult<E>(error: E): OkImpl<T> {
-    return Ok(this.val);
+  unwrapOrElse(_mapper: unknown): T {
+    return this.val;
   }
 
   safeUnwrap(): T {
     return this.val;
+  }
+
+  map<T2>(mapper: (val: T) => T2): SomeImpl<T2> {
+    return Some(mapper(this.val));
+  }
+
+  mapOr<T2>(
+    _default_: T2,
+    mapper: (val: T) => T2
+  ): T2 {
+    return mapper(this.val);
+  }
+
+  mapOrElse<U>(
+    default_: () => U,
+    _mapper: (val: T) => U
+  ): U {
+    return default_();
+  }
+
+  andThen<T2>(
+    mapper: (val: T) => Option<T2>
+  ): Option<T2> {
+    return mapper(this.val);
+  }
+
+  toResult<E>(error: E): OkImpl<T> {
+    return Ok(this.val);
   }
 
   toString(): string {
