@@ -27,7 +27,7 @@
   "devDependencies": {
     "@faker-js/faker": "^8.1.0",
     "@nodesecure/eslint-config": "^1.8.0",
-    "@types/node": "^20.7.2",
+    "@types/node": "^22.0.0",
     "c8": "^10.1.2",
     "cross-env": "^7.0.3",
     "glob": "^11.0.0",
