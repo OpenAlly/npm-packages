@@ -29,7 +29,7 @@
 </p>
 
 ## Requirements
-- [Node.js](https://nodejs.org/en/) version 16 or higher
+- [Node.js](https://nodejs.org/en/) version 20 or higher
 - npm v7+ for [workspaces](https://docs.npmjs.com/cli/v7/using-npm/workspaces)
 
 ## Available packages
