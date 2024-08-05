@@ -1,0 +1,36 @@
+name: Eslint Config CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - src/eslint-config/**
+  pull_request:
+    paths:
+      - src/eslint-config/**
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20.x]
+      fail-fast: false
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@0d381219ddf674d61a7572ddd19d7941e271515c # v2.9.0
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b # v4.0.3
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Install dependencies
+        run: npm ci
+      - name: Run tests
+        run: npm run test --workspace=src/eslint-config

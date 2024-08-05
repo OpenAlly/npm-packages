@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "description": "OpenAlly NPM packages",
   "scripts": {
-    "build": "tsc -b"
+    "build": "tsc -b",
+    "lint": "npx eslint src",
+    "test": "npm run test --ws --if-present"
   },
   "repository": {
     "type": "git",
@@ -17,7 +19,8 @@
     "src/mutex",
     "src/result",
     "src/auto-url",
-    "src/config"
+    "src/config",
+    "src/eslint-config"
   ],
   "license": "MIT",
   "bugs": {
@@ -26,7 +29,7 @@
   "homepage": "https://github.com/OpenAlly/npm-packages#readme",
   "devDependencies": {
     "@faker-js/faker": "^8.1.0",
-    "@nodesecure/eslint-config": "^1.8.0",
+    "@myunisoft/httpie": "^5.0.0",
     "@types/node": "^22.0.0",
     "c8": "^10.1.2",
     "cross-env": "^7.0.3",

@@ -8,7 +8,7 @@ export type tSvResponse<T = any> = {
   value: T;
   ttl: number | undefined;
   [TSV_SYMBOL]: boolean;
-}
+};
 
 export function tSv<T = any>(
   options: ITimeStoreAddOptions = {}

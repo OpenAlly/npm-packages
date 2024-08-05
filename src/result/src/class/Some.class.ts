@@ -38,31 +38,31 @@ export class SomeImpl<T> {
     return this.val;
   }
 
-  map<T2>(mapper: (val: T) => T2): SomeImpl<T2> {
+  map<T2>(mapper: (_val: T) => T2): SomeImpl<T2> {
     return Some(mapper(this.val));
   }
 
   mapOr<T2>(
     _default_: T2,
-    mapper: (val: T) => T2
+    mapper: (_val: T) => T2
   ): T2 {
     return mapper(this.val);
   }
 
   mapOrElse<U>(
     default_: () => U,
-    _mapper: (val: T) => U
+    _mapper: (_val: T) => U
   ): U {
     return default_();
   }
 
   andThen<T2>(
-    mapper: (val: T) => Option<T2>
+    mapper: (_val: T) => Option<T2>
   ): Option<T2> {
     return mapper(this.val);
   }
 
-  toResult<E>(error: E): OkImpl<T> {
+  toResult<E>(_error: E): OkImpl<T> {
     return Ok(this.val);
   }
 

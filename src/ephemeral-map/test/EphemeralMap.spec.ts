@@ -125,7 +125,7 @@ describe("EphemeralMap", () => {
 
   describe("emplace", () => {
     it("should insert new value if no matching key is detected", () => {
-      const em = new EphemeralMap<string, { failure: number }>();
+      const em = new EphemeralMap<string, { failure: number; }>();
 
       const value = em.emplace("foo", {
         insert() {
@@ -140,7 +140,7 @@ describe("EphemeralMap", () => {
     });
 
     it("should update old value", () => {
-      const em = new EphemeralMap<string, { failure: number }>();
+      const em = new EphemeralMap<string, { failure: number; }>();
       em.set("foo", { failure: 0 });
 
       const value = em.emplace("foo", {
@@ -155,7 +155,7 @@ describe("EphemeralMap", () => {
     });
 
     it("should update old value and ignore insert because the given key already exist", () => {
-      const em = new EphemeralMap<string, { failure: number }>();
+      const em = new EphemeralMap<string, { failure: number; }>();
       em.set("foo", { failure: 10 });
 
       const value = em.emplace("foo", {

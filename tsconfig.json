@@ -19,5 +19,8 @@
     {
       "path": "./src/config"
     }
+  ],
+  "exclude": [
+    "./src/eslint-config/**/*",
   ]
 }

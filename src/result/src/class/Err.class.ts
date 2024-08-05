@@ -33,7 +33,7 @@ export class ErrImpl<E> {
     return val;
   }
 
-  unwrapOrElse<T2>(mapper: (val: E) => T2): T2 {
+  unwrapOrElse<T2>(mapper: (_val: E) => T2): T2 {
     return mapper(this.val);
   }
 
