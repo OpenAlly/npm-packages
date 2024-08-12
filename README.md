@@ -15,7 +15,7 @@
     <img src="https://img.shields.io/github/license/OpenAlly/npm-packages?style=for-the-badge" alt="license">
   </a>
   <a href="https://github.com/OpenAlly/npm-packages">
-    <img src="https://img.shields.io/maintenance/yes/2023?style=for-the-badge" alt="maintained">
+    <img src="https://img.shields.io/maintenance/yes/2025?style=for-the-badge" alt="maintained">
   </a>
   <a href="https://api.securityscorecards.dev/projects/github.com/OpenAlly/npm-packages">
     <img src="https://api.securityscorecards.dev/projects/github.com/OpenAlly/npm-packages/badge?style=for-the-badge" alt="ossf scorecard">
