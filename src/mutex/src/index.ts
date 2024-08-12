@@ -142,7 +142,9 @@ export class Mutex extends EventEmitter {
   }
 
   private async lockWithoutSignal() {
-    await new Promise((resolve, reject) => this.#waitings.push([resolve, reject, ""]));
+    await new Promise((resolve, reject) => {
+      this.#waitings.push([resolve, reject, ""]);
+    });
   }
 
   private releaseID(id: string) {

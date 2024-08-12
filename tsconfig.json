@@ -18,6 +18,9 @@
     },
     {
       "path": "./src/config"
+    },
+    {
+      "path": "./src/eslint-config"	
     }
   ]
 }

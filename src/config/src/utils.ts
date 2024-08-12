@@ -24,8 +24,7 @@ export function limitObjectDepth<T = any>(obj: Record<string, any>, depth = 0): 
     return Object.keys(obj) as T;
   }
 
-  // eslint-disable-next-line no-param-reassign
-  const subDepth = --depth;
+  const subDepth = depth - 1;
   for (const [key, value] of Object.entries(obj)) {
     Reflect.set(obj, key, limitObjectDepth(value, subDepth));
   }

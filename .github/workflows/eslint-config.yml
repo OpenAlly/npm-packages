@@ -1,13 +1,13 @@
-name: Config CI
+name: Eslint Config CI
 
 on:
   push:
     branches: [main]
     paths:
-      - src/config/**
+      - src/eslint-config/**
   pull_request:
     paths:
-      - src/config/**
+      - src/eslint-config/**
 
 permissions:
   contents: read
@@ -33,4 +33,4 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: Run tests
-        run: npm run test --workspace=src/config
+        run: npm run test --workspace=src/eslint-config

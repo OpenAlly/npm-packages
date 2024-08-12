@@ -1,0 +1,35 @@
+{
+  "name": "@openally/eslint-config",
+  "version": "1.0.0",
+  "description": "OpenAlly ESLint configuration for Node.js and TypeScript",
+  "main": "./dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build",
+    "test-only": "tsx --test ./test/test.ts",
+    "test": "c8 --all --src ./src -r html npm run test-only",
+    "lint": "cross-env eslint src/**/*.ts",
+    "sync": "npx tsx ./tools/sync.ts"
+  },
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "openally",
+    "eslint",
+    "eslint-config"
+  ],
+  "author": "GENTILHOMME Thomas <gentilhomme.thomas@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "@stylistic/eslint-plugin": "^2.6.2",
+    "@typescript-eslint/parser": "8.0.1",
+    "eslint": "^9.9.0",
+    "globals": "^15.9.0",
+    "typescript-eslint": "^8.0.1"
+  },
+  "devDependencies": {
+    "@typescript-eslint/types": "^8.0.1",
+    "jsdom": "^24.1.1"
+  }
+}

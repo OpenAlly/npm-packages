@@ -34,7 +34,7 @@ export class NoneImpl {
     return default_();
   }
 
-  andThen(op: unknown): None {
+  andThen(_op: unknown): None {
     return this;
   }
 

@@ -36,6 +36,13 @@ export interface ConfigOptions<T> {
   };
 }
 
+export interface SubscriptionObserver<T> {
+  closed: boolean;
+  next(value: T): void;
+  error(errorValue: any): void;
+  complete(): void;
+}
+
 export class AsynchronousConfig<T extends Record<string, any> = Record<string, any>> extends EventEmitter {
   #isDotFile = false;
   #isTOML = false;
@@ -47,7 +54,7 @@ export class AsynchronousConfig<T extends Record<string, any> = Record<string, a
   #scheduledLazyWrite: NodeJS.Immediate;
   #autoReloadActivated = false;
   #configHasBeenRead = false;
-  #subscriptionObservers: ([string, ZenObservable.SubscriptionObserver<any>])[] = [];
+  #subscriptionObservers: ([string, SubscriptionObserver<any>])[] = [];
   #jsonSchema?: JSONSchemaType<T>;
   #cleanupTimeout: NodeJS.Timeout;
   #watcher: nodeFs.FSWatcher;
