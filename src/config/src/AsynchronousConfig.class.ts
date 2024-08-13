@@ -167,7 +167,7 @@ export class AsynchronousConfig<T extends Record<string, any> = Record<string, a
       }
       JSONConfig = this.#isTOML ? TOML.parse(configFileContent) : JSON.parse(configFileContent);
     }
-    catch (err) {
+    catch (err: any) {
       const isSyntaxError = err.name === "SyntaxError" || err.name === "TomlError";
 
       // If NodeJS Code is different from "ENOENTRY", then throw Error (only if createOnNoEntry is equal to false)
@@ -187,7 +187,7 @@ export class AsynchronousConfig<T extends Record<string, any> = Record<string, a
       const schemaFileContent = await this.#fs.promises.readFile(this.#configSchemaFilePath, "utf-8");
       JSONSchema = JSON.parse(schemaFileContent);
     }
-    catch (err) {
+    catch (err: any) {
       if (Reflect.has(err, "code") && err.code !== "ENOENT") {
         throw err;
       }

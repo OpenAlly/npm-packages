@@ -44,8 +44,9 @@ describe("TimeStore", () => {
       store.add(expectedIdentifier);
 
       try {
-        // @ts-ignore
-        const [identifier] = await once(store, TimeStore.Expired, AbortSignal.timeout(500));
+        const [identifier] = await once(store, TimeStore.Expired, {
+          signal: AbortSignal.timeout(500)
+        });
         assert.equal(identifier, expectedIdentifier);
       }
       finally {
@@ -371,8 +372,9 @@ describe("TimeStore", () => {
       setTimeout(() => store.delete(toDeleteIdentifier), 100);
 
       try {
-        // @ts-ignore
-        const [identifier] = await once(store, TimeStore.Expired, AbortSignal.timeout(safeTTL(ttl)));
+        const [identifier] = await once(store, TimeStore.Expired, {
+          signal: AbortSignal.timeout(safeTTL(ttl))
+        });
 
         assert.equal(identifier, expectedIdentifier);
         assert.equal(counter.listenerCount, 1);

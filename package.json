@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "description": "OpenAlly NPM packages",
   "scripts": {
-    "build": "tsc -b"
+    "build": "tsc -b",
+    "test": "npm run test --ws --if-present",
+    "lint": "npx eslint workspaces"
   },
   "repository": {
     "type": "git",
@@ -27,6 +29,7 @@
   "devDependencies": {
     "@faker-js/faker": "^8.1.0",
     "@nodesecure/eslint-config": "^1.8.0",
+    "@openally/config.typescript": "^1.0.3",
     "@types/node": "^22.0.0",
     "c8": "^10.1.2",
     "cross-env": "^7.0.3",

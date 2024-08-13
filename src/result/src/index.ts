@@ -2,7 +2,7 @@
 import { Ok, OkImpl } from "./class/Ok.class.js";
 import { Err, ErrImpl } from "./class/Err.class.js";
 
-export { Option, Some } from "./class/Some.class.js";
+export { type Option, Some } from "./class/Some.class.js";
 export { None } from "./class/None.class.js";
 export { Ok, Err };
 
@@ -35,8 +35,8 @@ export namespace Result {
 
       return new OkImpl(val);
     }
-    catch (e) {
-      return new ErrImpl(e);
+    catch (e: any) {
+      return new ErrImpl<E>(e);
     }
   }
 

@@ -226,4 +226,4 @@ export class TimeStore extends EventEmitter {
   }
 }
 
-export { tSv, tSvResponse, TSV_SYMBOL };
+export { tSv, type tSvResponse, TSV_SYMBOL };
