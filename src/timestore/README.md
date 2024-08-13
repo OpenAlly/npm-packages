@@ -25,7 +25,7 @@
 > Internally it uses a Node.js timer. This library does not guarantee that the timers doesn't drift.
 
 ## Requirements
-- [Node.js](https://nodejs.org/en/) v16 or higher
+- [Node.js](https://nodejs.org/en/) v20 or higher
 
 ## Getting Started
 
