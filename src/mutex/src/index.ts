@@ -1,6 +1,6 @@
 // Import Node.js Dependencies
-import EventEmitter from "node:events";
-import crypto from "node:crypto";
+import { EventEmitter } from "node:events";
+import * as crypto from "node:crypto";
 import { clearTimeout } from "node:timers";
 
 export interface IMutexOptions {
