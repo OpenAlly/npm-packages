@@ -1,0 +1,32 @@
+{
+  "name": "@openally/env",
+  "version": "1.0.0",
+  "description": "Safely load/parse ENV variables",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./dist/index.js",
+      "import": "./dist/index.mjs",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs,esm --dts --clean",
+    "prepublishOnly": "npm run build",
+    "test": "glob -c \"tsx --test\" \"./test/**/*.spec.ts\"",
+    "coverage": "c8 --all --src ./src -r html npm test",
+    "lint": "cross-env eslint src/**/*.ts"
+  },
+  "files": [
+    "dist"
+  ],
+  "keywords": [],
+  "author": "GENTILHOMME Thomas <gentilhomme.thomas@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "@openally/result": "^1.3.0",
+    "ts-pattern": "^5.3.1"
+  }
+}
