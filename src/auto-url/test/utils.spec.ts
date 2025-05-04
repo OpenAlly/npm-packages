@@ -20,7 +20,7 @@ describe("stringifyValue", () => {
 
   it("should transform Objects", () => {
     assert.strictEqual(stringifyValue([1, 2, 3]), "[1,2,3]");
-    assert.strictEqual(stringifyValue({ foo: "bar" }), `{"foo":"bar"}`);
+    assert.strictEqual(stringifyValue({ foo: "bar" }), "{\"foo\":\"bar\"}");
   });
 });
 

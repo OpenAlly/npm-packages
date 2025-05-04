@@ -10,7 +10,7 @@ export function autoURL<T extends string>(
   transformersConfig: autoURLTransformConfig<T> = Object.create(null)
 ): URL {
   if (!source) {
-    throw new Error(`source argument must be provided`);
+    throw new Error("source argument must be provided");
   }
 
   const clonedURL = new URL(source);

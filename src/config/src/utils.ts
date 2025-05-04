@@ -15,7 +15,10 @@ export function formatAjvErrors(ajvErrors: ErrorObject[]) {
   return stdout.join("");
 }
 
-export function limitObjectDepth<T = any>(obj: Record<string, any>, depth = 0): T {
+export function limitObjectDepth<T = any>(
+  obj: Record<string, any>,
+  depth = 0
+): T {
   if (!obj || typeof obj !== "object") {
     return obj;
   }
@@ -24,10 +27,8 @@ export function limitObjectDepth<T = any>(obj: Record<string, any>, depth = 0): 
     return Object.keys(obj) as T;
   }
 
-  // eslint-disable-next-line no-param-reassign
-  const subDepth = --depth;
   for (const [key, value] of Object.entries(obj)) {
-    Reflect.set(obj, key, limitObjectDepth(value, subDepth));
+    Reflect.set(obj, key, limitObjectDepth(value, depth - 1));
   }
 
   return obj as T;

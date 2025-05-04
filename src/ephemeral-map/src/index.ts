@@ -14,18 +14,17 @@ import {
 import type { RequireAtLeastOne } from "type-fest";
 
 // CONSTANTS
-const INTERNAL_STORE = Symbol("TimeStore");
-
-export { tSv, tSvResponse, INTERNAL_STORE };
+export const INTERNAL_STORE = Symbol("TimeStore");
+export { tSv, tSvResponse };
 
 export interface IEphemeralMapOptions extends Omit<ITimeStoreConstructorOptions, "eventEmitter"> {
   refreshOnGet?: boolean;
 }
 
 export type EmplaceHandler<K extends TimeStoreIdentifier, V> = RequireAtLeastOne<{
-  insert: (key: K, map: EphemeralMap<K, V>) => V,
-  update: (old: V, key: K, map: EphemeralMap<K, V>) => V
-}>
+  insert: (key: K, map: EphemeralMap<K, V>) => V;
+  update: (old: V, key: K, map: EphemeralMap<K, V>) => V;
+}>;
 
 export default class EphemeralMap<K extends TimeStoreIdentifier, V> extends EventEmitter {
   static Expired = TimeStore.Expired;

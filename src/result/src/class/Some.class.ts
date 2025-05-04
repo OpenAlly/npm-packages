@@ -62,7 +62,7 @@ export class SomeImpl<T> {
     return mapper(this.val);
   }
 
-  toResult<E>(error: E): OkImpl<T> {
+  toResult<E>(_error: E): OkImpl<T> {
     return Ok(this.val);
   }
 

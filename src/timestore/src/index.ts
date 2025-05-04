@@ -62,7 +62,7 @@ export class TimeStore extends EventEmitter {
   #keepEventLoopAlive: boolean;
   #identifiers: Map<TimeStoreIdentifier, TimeStoreMapValue> = new Map();
   #ttl: number;
-  #current: { identifier: TimeStoreIdentifier, ttl: number } = { identifier: kUniqueNullValue, ttl: 0 };
+  #current: { identifier: TimeStoreIdentifier; ttl: number; } = { identifier: kUniqueNullValue, ttl: 0 };
   #timer: NodeJS.Timeout | null = null;
   #customEventEmitter: EventEmitter | null = null;
 

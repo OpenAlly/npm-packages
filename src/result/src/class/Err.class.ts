@@ -59,7 +59,7 @@ export class ErrImpl<E> {
     return new ErrImpl(mapper(this.val));
   }
 
-  andThen(op: unknown): ErrImpl<E> {
+  andThen(_op: unknown): ErrImpl<E> {
     return this;
   }
 

@@ -38,7 +38,7 @@ export class Mutex extends EventEmitter {
 
   #canceled = false;
   #keepReferencingTimers = true;
-  #waitings: [(value: unknown) => void, (reason?: string | Error) => void, string][] = [];
+  #waitings: [(value: void) => void, (reason?: string | Error) => void, string][] = [];
   #concurrency = 5;
   #current = 0;
 
@@ -123,18 +123,23 @@ export class Mutex extends EventEmitter {
     };
   }
 
-  private async lockWithSignal(signal: AbortSignal) {
+  private async lockWithSignal(
+    signal: AbortSignal
+  ) {
     const task = new AbortController();
     const id = crypto.randomBytes(6).toString("hex");
 
     try {
-      await new Promise((resolve, reject) => {
-        signal.addEventListener("abort", () => this.releaseID(id), {
-          once: true, signal: task.signal
-        });
+      const { resolve, reject, promise } = Promise.withResolvers<void>();
 
-        this.#waitings.push([resolve, reject, id]);
+      signal.addEventListener("abort", () => this.releaseID(id), {
+        once: true,
+        signal: task.signal
       });
+
+      this.#waitings.push([resolve, reject, id]);
+
+      await promise;
     }
     finally {
       task.abort();
@@ -142,7 +147,10 @@ export class Mutex extends EventEmitter {
   }
 
   private async lockWithoutSignal() {
-    await new Promise((resolve, reject) => this.#waitings.push([resolve, reject, ""]));
+    const { resolve, reject, promise } = Promise.withResolvers<void>();
+
+    this.#waitings.push([resolve, reject, ""]);
+    await promise;
   }
 
   private releaseID(id: string) {

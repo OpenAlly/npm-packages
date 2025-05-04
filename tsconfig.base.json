@@ -2,6 +2,7 @@
   "extends": "@openally/config.typescript/cjs",
   "compilerOptions": {
     "composite": false,
-    "types": ["node"]
+    "types": ["node"],
+    "lib": ["ES2024"]
   }
 }

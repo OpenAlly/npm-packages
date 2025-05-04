@@ -8,7 +8,6 @@ export { Ok, Err };
 
 export type Result<T, E> = OkImpl<T> | ErrImpl<E>;
 
-// eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace Result {
   /**
    * Wrap an operation that may throw an Error (`try-catch` style) into checked exception style

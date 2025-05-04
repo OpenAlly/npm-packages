@@ -1,6 +1,6 @@
 // Import Node.js Dependencies
 import { describe, it } from "node:test";
-import assert from "assert";
+import assert from "node:assert";
 
 // Import Internal Dependencies
 import { formatAjvErrors, limitObjectDepth, deepGet, deepSet } from "../src/utils.js";

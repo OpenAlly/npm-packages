@@ -13,7 +13,7 @@ import { AsynchronousConfig } from "../src/index.js";
 
 const __dirname = url.fileURLToPath(new URL(".", import.meta.url));
 
-type FooConfig = { foo: string };
+type FooConfig = { foo: string; };
 
 describe("AsynchronousConfig", () => {
   // Keep the event-loop alive while running tests
