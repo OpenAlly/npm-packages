@@ -21,7 +21,8 @@
     "src/mutex",
     "src/result",
     "src/auto-url",
-    "src/config"
+    "src/config",
+    "src/env"
   ],
   "license": "MIT",
   "bugs": {
