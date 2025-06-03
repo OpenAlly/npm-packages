@@ -24,11 +24,13 @@ const kDefaultSchema = {
   additionalProperties: true
 };
 
+export type ConfigAnySchema = Record<string | number | symbol, any>;
+
 export interface ConfigOptions<T> {
   createOnNoEntry?: boolean;
   autoReload?: boolean;
   writeOnSet?: boolean;
-  jsonSchema?: JSONSchemaType<T>;
+  jsonSchema?: JSONSchemaType<T> | ConfigAnySchema;
   fs?: {
     promises: Pick<typeof nodeFs.promises, "readFile" | "writeFile">;
     watch: typeof nodeFs.watch;
@@ -48,7 +50,7 @@ export class AsynchronousConfig<T extends Record<string, any> = Record<string, a
   #autoReloadActivated = false;
   #configHasBeenRead = false;
   #subscriptionObservers: ([string, ZenObservable.SubscriptionObserver<any>])[] = [];
-  #jsonSchema?: JSONSchemaType<T>;
+  #jsonSchema?: JSONSchemaType<T> | ConfigAnySchema;
   #cleanupTimeout: NodeJS.Timeout;
   #watcher: nodeFs.FSWatcher;
   #fs: Required<ConfigOptions<T>>["fs"];
