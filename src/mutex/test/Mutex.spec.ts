@@ -129,6 +129,17 @@ describe("Mutex", () => {
       assert.strictEqual(mu.running, 0);
       assert.strictEqual(releaseCount, 2);
     });
+
+    it("should release the acquired lock automatically when the lock leave the scope", async() => {
+      const mu = new Mutex();
+
+      {
+        using _ = await mu.acquire();
+        assert.strictEqual(mu.running, 1);
+      }
+
+      assert.strictEqual(mu.running, 0);
+    });
   });
 
   describe("acquire", () => {
