@@ -111,7 +111,7 @@ export class Mutex extends EventEmitter {
       timer.unref();
     }
 
-    return () => {
+    const free = () => {
       if (isReleased) {
         return;
       }
@@ -121,6 +121,12 @@ export class Mutex extends EventEmitter {
       }
       this.release();
     };
+
+    free[Symbol.dispose] = () => {
+      free();
+    };
+
+    return free;
   }
 
   private async lockWithSignal(
