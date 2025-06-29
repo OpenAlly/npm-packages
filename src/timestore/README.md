@@ -66,11 +66,11 @@ Identifier are often described with the following type:
 export type TimeStoreIdentifier = string | symbol | number | boolean | bigint | object | null;
 ```
 
-### constructor(options?: ITimeStoreConstructorOptions)
+### constructor(options?: TimeStoreConstructorOptions)
 The constructor `options` payload is described by the following TS interface:
 
 ```ts
-interface ITimeStoreConstructorOptions {
+interface TimeStoreConstructorOptions {
   /**
    * Time To Live (Lifetime of stored identifiers).
    */
@@ -99,11 +99,11 @@ interface ITimeStoreConstructorOptions {
 
 If the `ttl` option is not provided all identifiers will remain active. The default class `ttl` will be equal **zero**.
 
-### add(identifier: TimeStoreIdentifier, options?: ITimeStoreAddOptions): this
+### add(identifier: TimeStoreIdentifier, options?: TimeStoreAddOptions): this
 The `options` payload is described by the following TS interface:
 
 ```ts
-interface ITimeStoreAddOptions {
+interface TimeStoreAddOptions {
   /**
    * Time To Live for the given identifier.
    * If no value provided it will take the class TTL value.

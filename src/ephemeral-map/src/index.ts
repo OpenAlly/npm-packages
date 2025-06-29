@@ -9,7 +9,7 @@ import {
   TSV_SYMBOL,
 
   type TimeStoreIdentifier,
-  type ITimeStoreConstructorOptions
+  type TimeStoreConstructorOptions
 } from "@openally/timestore";
 import type { RequireAtLeastOne } from "type-fest";
 
@@ -17,7 +17,7 @@ import type { RequireAtLeastOne } from "type-fest";
 export const INTERNAL_STORE = Symbol("TimeStore");
 export { tSv, tSvResponse };
 
-export interface IEphemeralMapOptions extends Omit<ITimeStoreConstructorOptions, "eventEmitter"> {
+export interface EphemeralMapOptions extends Omit<TimeStoreConstructorOptions, "eventEmitter"> {
   refreshOnGet?: boolean;
 }
 
@@ -37,7 +37,7 @@ export default class EphemeralMap<K extends TimeStoreIdentifier, V> extends Even
 
   constructor(
     iterable?: Iterable<readonly [K, V]>,
-    options: IEphemeralMapOptions = {}
+    options: EphemeralMapOptions = {}
   ) {
     super();
     const { refreshOnGet = false, ...timeStoreOptions } = options;
@@ -155,7 +155,7 @@ export default class EphemeralMap<K extends TimeStoreIdentifier, V> extends Even
   static set<K extends TimeStoreIdentifier, V>(
     obj: EphemeralMap<K, V> | Map<K, V>,
     pair: readonly [K, V],
-    options?: ITimeStoreConstructorOptions
+    options?: TimeStoreConstructorOptions
   ) {
     const [key, value] = pair;
 

@@ -3,7 +3,7 @@ import { EventEmitter } from "node:events";
 import * as crypto from "node:crypto";
 import { clearTimeout } from "node:timers";
 
-export interface IMutexOptions {
+export interface MutexOptions {
   /**
    * @default 5
    */
@@ -17,7 +17,7 @@ export interface IMutexOptions {
   keepReferencingTimers?: boolean;
 }
 
-export interface IMutexAcquireOptions {
+export interface MutexAcquireOptions {
   /**
    * AbortSignal to be able to define a maximum time to wait before abortion of lock acquisition.
    */
@@ -42,7 +42,7 @@ export class Mutex extends EventEmitter {
   #concurrency = 5;
   #current = 0;
 
-  constructor(options: IMutexOptions = Object.create(null)) {
+  constructor(options: MutexOptions = Object.create(null)) {
     super();
     const { concurrency = 5, keepReferencingTimers = true } = options;
 
@@ -83,7 +83,7 @@ export class Mutex extends EventEmitter {
     return this;
   }
 
-  async acquire(options: IMutexAcquireOptions = {}) {
+  async acquire(options: MutexAcquireOptions = {}) {
     const { signal, delayBeforeAutomaticRelease = null } = options;
 
     if (this.#canceled || signal?.aborted) {
