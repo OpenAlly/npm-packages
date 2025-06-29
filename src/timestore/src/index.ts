@@ -7,7 +7,7 @@ import { tSv, tSvResponse, TSV_SYMBOL } from "./TimeValue";
 // CONSTANTS
 const kUniqueNullValue = Symbol("UniqueNullValue");
 
-export interface ITimeStoreConstructorOptions {
+export interface TimeStoreConstructorOptions {
   /**
    * Time To Live (Lifetime of stored identifiers).
    */
@@ -33,7 +33,7 @@ export interface ITimeStoreConstructorOptions {
   keepEventLoopAlive?: boolean;
 }
 
-export interface ITimeStoreAddOptions {
+export interface TimeStoreAddOptions {
   /**
    * Time To Live for the given identifier.
    * If no value provided it will take the class TTL value.
@@ -66,7 +66,7 @@ export class TimeStore extends EventEmitter {
   #timer: NodeJS.Timeout | null = null;
   #customEventEmitter: EventEmitter | null = null;
 
-  constructor(options: ITimeStoreConstructorOptions = {}) {
+  constructor(options: TimeStoreConstructorOptions = {}) {
     super();
 
     const {
@@ -109,7 +109,7 @@ export class TimeStore extends EventEmitter {
 
   add(
     identifier: TimeStoreIdentifier,
-    options: ITimeStoreAddOptions = {}
+    options: TimeStoreAddOptions = {}
   ) {
     const { keepIdentifierBirthTTL = false } = options;
 

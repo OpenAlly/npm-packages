@@ -1,5 +1,5 @@
 // Import Internal Dependencies
-import { ITimeStoreAddOptions } from "./index";
+import { TimeStoreAddOptions } from "./index";
 
 // CONSTANTS
 export const TSV_SYMBOL = Symbol.for("TimeStoreValue");
@@ -11,7 +11,7 @@ export type tSvResponse<T = any> = {
 };
 
 export function tSv<T = any>(
-  options: ITimeStoreAddOptions = {}
+  options: TimeStoreAddOptions = {}
 ) {
   const { ttl } = options;
 

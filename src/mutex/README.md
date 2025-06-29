@@ -87,11 +87,11 @@ declare class Mutex {
 > The maximum concurrency defined on the class is `1000`
 
 <details>
-<summary>constructor(options: IMutexOptions)</summary>
+<summary>constructor(options: MutexOptions)</summary>
 
 The `options` payload is described by the following TypeScript interface:
 ```ts
-export interface IMutexOptions {
+export interface MutexOptions {
   /**
    * @default 5
    */
@@ -108,11 +108,11 @@ export interface IMutexOptions {
 </details>
 
 <details>
-<summary>acquire(options: IMutexAcquireOptions): Promise< () => void > </summary>
+<summary>acquire(options: MutexAcquireOptions): Promise< () => void > </summary>
 Acquire one lock. The `options` payload is described by the following TypeScript interface:
 
 ```ts
-export interface IMutexAcquireOptions {
+export interface MutexAcquireOptions {
   /**
    * AbortSignal to be able to define a maximum time to wait before abortion of lock acquisition.
    */
