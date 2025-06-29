@@ -1,6 +1,6 @@
 {
   "name": "@openally/ephemeral-map",
-  "version": "1.3.2",
+  "version": "2.0.0",
   "description": "ES6 Map-Like implementation with keys that have a defined timelife",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -26,7 +26,7 @@
   "author": "GENTILHOMME Thomas <gentilhomme.thomas@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "@openally/timestore": "^1.5.1",
+    "@openally/timestore": "^2.0.0",
     "type-fest": "^4.3.1"
   }
 }
