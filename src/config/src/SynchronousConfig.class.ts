@@ -16,40 +16,36 @@ import * as constants from "./constants.js";
 // CONSTANTS
 const kAjv = new Ajv({ useDefaults: true });
 
-export type ConfigAnySchema = Record<string | number | symbol, any>;
+type ConfigAnySchema = Record<string | number | symbol, any>;
 
-export interface ConfigOptions<T> {
+export interface SynchronousConfigOptions<T> {
   createOnNoEntry?: boolean;
   autoReload?: boolean;
   writeOnSet?: boolean;
   jsonSchema?: JSONSchemaType<T> | ConfigAnySchema;
   fs?: {
-    promises: Pick<typeof nodeFs.promises, "readFile" | "writeFile">;
-    watch: typeof nodeFs.watch;
+    readFileSync: typeof nodeFs.readFileSync;
+    writeFileSync: typeof nodeFs.writeFileSync;
     existsSync: typeof nodeFs.existsSync;
   };
 }
 
-export class AsynchronousConfig<T extends Record<string, any> = Record<string, any>> extends EventEmitter {
+export class SynchronousConfig<T extends Record<string, any> = Record<string, any>> extends EventEmitter {
   #isDotFile = false;
   #isTOML = false;
   #configFilePath: string;
   #configSchemaFilePath: string;
   #createOnNoEntry: boolean;
-  #autoReload: boolean;
   #writeOnSet: boolean;
-  #scheduledLazyWrite: NodeJS.Immediate;
-  #autoReloadActivated = false;
   #configHasBeenRead = false;
   #subscriptionObservers: ([string, ZenObservable.SubscriptionObserver<any>])[] = [];
   #jsonSchema?: JSONSchemaType<T> | ConfigAnySchema;
   #cleanupTimeout: NodeJS.Timeout;
-  #watcher: nodeFs.FSWatcher;
-  #fs: Required<ConfigOptions<T>>["fs"];
+  #fs: Required<SynchronousConfigOptions<T>>["fs"];
 
   constructor(
     configFilePath: string,
-    options: ConfigOptions<T> = Object.create(null)
+    options: SynchronousConfigOptions<T> = Object.create(null)
   ) {
     super();
     if (typeof configFilePath !== "string") {
@@ -61,7 +57,6 @@ export class AsynchronousConfig<T extends Record<string, any> = Record<string, a
 
     const {
       createOnNoEntry = false,
-      autoReload = false,
       writeOnSet = false,
       jsonSchema,
       fs = nodeFs
@@ -99,7 +94,6 @@ export class AsynchronousConfig<T extends Record<string, any> = Record<string, a
     this[constants.SYMBOLS.schema] = null;
 
     this.#createOnNoEntry = Boolean(createOnNoEntry);
-    this.#autoReload = Boolean(autoReload);
     this.#writeOnSet = Boolean(writeOnSet);
 
     this.#subscriptionObservers = [];
@@ -144,7 +138,7 @@ export class AsynchronousConfig<T extends Record<string, any> = Record<string, a
     }
   }
 
-  async read(defaultPayload?: T) {
+  read(defaultPayload?: T) {
     if (typeof defaultPayload === "object" && !defaultPayload) {
       throw new TypeError("The defaultPayload must be an object");
     }
@@ -156,7 +150,7 @@ export class AsynchronousConfig<T extends Record<string, any> = Record<string, a
     // Get and parse the JSON Configuration file (if exist, else it will throw ENOENT).
     // If he doesn't exist we replace it by the defaultPayload or the precedent loaded payload
     try {
-      let configFileContent = await this.#fs.promises.readFile(this.#configFilePath, "utf-8");
+      let configFileContent = this.#fs.readFileSync(this.#configFilePath, "utf-8");
       if (this.#isTOML === false && configFileContent.trim() === "") {
         configFileContent = "{}";
         writeOnDisk = true;
@@ -180,7 +174,7 @@ export class AsynchronousConfig<T extends Record<string, any> = Record<string, a
     // Get and parse the JSON Schema file (only if he exist).
     // If he doesn't exist we replace it with a default Schema
     try {
-      const schemaFileContent = await this.#fs.promises.readFile(this.#configSchemaFilePath, "utf-8");
+      const schemaFileContent = this.#fs.readFileSync(this.#configSchemaFilePath, "utf-8");
       JSONSchema = JSON.parse(schemaFileContent);
     }
     catch (err: any) {
@@ -219,51 +213,10 @@ export class AsynchronousConfig<T extends Record<string, any> = Record<string, a
 
     // Write the configuraton on the disk for the first time (if there is no one available!).
     if (writeOnDisk) {
-      const autoReload = () => this.setupAutoReload();
-
-      this.once("error", () => {
-        this.removeListener("configWritten", autoReload);
-      });
-      this.once("configWritten", autoReload);
-      this.#lazyWriteOnDisk();
-    }
-    else {
-      this.setupAutoReload();
+      this.writeOnDisk();
     }
 
     return this;
-  }
-
-  setupAutoReload() {
-    if (!this.#configHasBeenRead) {
-      throw new Error("You must read config first before setting up autoReload!");
-    }
-
-    if (!this.#autoReload || this.#autoReloadActivated) {
-      return false;
-    }
-
-    this.#watcher = this.#fs.watch(
-      this.#configFilePath,
-      { persistent: false },
-      async() => {
-        try {
-          if (!this.#configHasBeenRead) {
-            return;
-          }
-          await this.read();
-          this.emit("reload");
-        }
-        catch (err) {
-          this.emit("error", err);
-        }
-      }
-    );
-    this.#autoReloadActivated = true;
-
-    this.emit("watcherInitialized");
-
-    return true;
   }
 
   observableOf(fieldPath: string, depth = Infinity) {
@@ -304,13 +257,13 @@ export class AsynchronousConfig<T extends Record<string, any> = Record<string, a
 
     this.payload = utils.deepSet<T>(this.payload, fieldPath, fieldValue);
     if (this.#writeOnSet) {
-      this.#lazyWriteOnDisk();
+      this.writeOnDisk();
     }
 
     return this;
   }
 
-  async writeOnDisk() {
+  writeOnDisk() {
     if (!this.#configHasBeenRead) {
       throw new Error("You must read config first before writing it on the disk!");
     }
@@ -318,29 +271,12 @@ export class AsynchronousConfig<T extends Record<string, any> = Record<string, a
     const data = this.#isTOML ?
       TOML.stringify(this[constants.SYMBOLS.payload]) :
       JSON.stringify(this[constants.SYMBOLS.payload], null, 2);
-    await this.#fs.promises.writeFile(this.#configFilePath, data);
-
-    this.emit("configWritten");
+    this.#fs.writeFileSync(this.#configFilePath, data);
   }
 
-  #lazyWriteOnDisk(): void {
-    if (this.#scheduledLazyWrite) {
-      clearImmediate(this.#scheduledLazyWrite);
-    }
-    this.#scheduledLazyWrite = setImmediate(
-      () => this.writeOnDisk().catch((error) => this.emit("error", error))
-    );
-  }
-
-  async close(): Promise<void> {
+  close(): void {
     if (!this.#configHasBeenRead) {
       return;
-    }
-
-    clearImmediate(this.#scheduledLazyWrite);
-    if (this.#autoReloadActivated) {
-      this.#watcher.close();
-      this.#autoReloadActivated = false;
     }
 
     for (const [, subscriptionObservers] of this.#subscriptionObservers) {
@@ -349,7 +285,7 @@ export class AsynchronousConfig<T extends Record<string, any> = Record<string, a
     this.#subscriptionObservers = [];
     clearInterval(this.#cleanupTimeout);
 
-    await this.writeOnDisk();
+    this.writeOnDisk();
     this.#configHasBeenRead = false;
 
     this.emit("close");
