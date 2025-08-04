@@ -36,7 +36,7 @@
     "@openally/config.typescript": "^1.0.3",
     "@types/node": "^24.0.7",
     "c8": "^10.1.2",
-    "cross-env": "^7.0.3",
+    "cross-env": "^10.0.0",
     "glob": "^11.0.0",
     "iterator-matcher": "^2.1.0",
     "sinon": "^21.0.0",
