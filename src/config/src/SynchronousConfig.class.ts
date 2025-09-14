@@ -211,7 +211,7 @@ export class SynchronousConfig<T extends Record<string, any> = Record<string, an
       throw error;
     }
 
-    // Write the configuraton on the disk for the first time (if there is no one available!).
+    // Write the configuration on the disk for the first time (if there is no one available!).
     if (writeOnDisk) {
       this.writeOnDisk();
     }
