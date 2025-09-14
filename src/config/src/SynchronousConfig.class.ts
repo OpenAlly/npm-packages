@@ -171,7 +171,7 @@ export class SynchronousConfig<T extends Record<string, any> = Record<string, an
       writeOnDisk = true;
     }
 
-    // Get and parse the JSON Schema file (only if he exist).
+    // Get and parse the JSON Schema file (only if it exists).
     // If he doesn't exist we replace it with a default Schema
     try {
       const schemaFileContent = this.#fs.readFileSync(this.#configSchemaFilePath, "utf-8");
