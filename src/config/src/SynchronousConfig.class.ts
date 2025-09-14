@@ -98,7 +98,7 @@ export class SynchronousConfig<T extends Record<string, any> = Record<string, an
 
     this.#subscriptionObservers = [];
 
-    // Assign defaultSchema is exist!
+    // Assign defaultSchema if exists!
     if (jsonSchema !== void 0) {
       if (typeof jsonSchema !== "object") {
         throw new TypeError("The options.jsonSchema must be an object");
