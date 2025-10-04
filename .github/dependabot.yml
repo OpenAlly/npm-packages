@@ -5,7 +5,7 @@ updates:
     schedule:
       interval: "monthly"
       cooldown:
-        - default-days: 5
+        default-days: 5
     groups:
       github-actions:
         patterns:
@@ -17,7 +17,7 @@ updates:
     schedule:
       interval: "weekly"
       cooldown:
-        - default-days: 5
+        default-days: 5
     groups:
       dependencies:
         dependency-type: "production"
@@ -30,7 +30,7 @@ updates:
     schedule:
       interval: "weekly"
       cooldown:
-        - default-days: 5
+        default-days: 5
     groups:
       dependencies:
         dependency-type: "production"
@@ -43,7 +43,7 @@ updates:
     schedule:
       interval: "weekly"
       cooldown:
-        - default-days: 5
+        default-days: 5
     groups:
       dependencies:
         dependency-type: "production"
@@ -56,7 +56,7 @@ updates:
     schedule:
       interval: "weekly"
       cooldown:
-        - default-days: 5
+        default-days: 5
     groups:
       dependencies:
         dependency-type: "production"
@@ -69,7 +69,7 @@ updates:
     schedule:
       interval: "weekly"
       cooldown:
-        - default-days: 5
+        default-days: 5
     groups:
       dependencies:
         dependency-type: "production"
@@ -82,7 +82,7 @@ updates:
     schedule:
       interval: "weekly"
       cooldown:
-        - default-days: 5
+        default-days: 5
     groups:
       dependencies:
         dependency-type: "production"
