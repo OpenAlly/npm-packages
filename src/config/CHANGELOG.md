@@ -1,5 +1,11 @@
 # @openally/config
 
+## 1.2.0
+
+### Minor Changes
+
+- [#226](https://github.com/OpenAlly/npm-packages/pull/226) [`7437c4f`](https://github.com/OpenAlly/npm-packages/commit/7437c4f304f70a6b81a33460d5bee534fb603b80) Thanks [@fraxken](https://github.com/fraxken)! - Implement a synchronous configuration
+
 ## 1.1.0
 
 ### Minor Changes
