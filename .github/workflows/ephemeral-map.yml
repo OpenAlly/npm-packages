@@ -31,7 +31,7 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
       - name: Build timestore
         run: npm run build --workspace=src/timestore
       - name: Run tests
