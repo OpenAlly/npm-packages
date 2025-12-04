@@ -53,6 +53,30 @@ export interface EventLoopMonitorOptions {
   sampleInterval?: number;
 }
 
+export interface EventLoopUtilizationMetrics {
+  /**
+   * Event loop utilization ratio between 0 and 1.
+   * Represents the percentage of time the event loop was active vs idle.
+   */
+  utilized: number;
+
+  /**
+   * Event loop delay in milliseconds.
+   * Higher values indicate the event loop is blocked by long-running operations.
+   */
+  delay: number;
+
+  /**
+   * Current V8 heap memory usage in bytes.
+   */
+  heapUsed?: number;
+
+  /**
+   * Resident Set Size - total memory allocated for the process in bytes.
+   */
+  rss?: number;
+}
+
 export class EventLoopMonitor {
   static resolution = 10;
 
@@ -112,6 +136,15 @@ export class EventLoopMonitor {
     this.#loop = {
       utilized: performance.eventLoopUtilization(this.#elu).utilization,
       delay
+    };
+  }
+
+  getUtilization(): EventLoopUtilizationMetrics {
+    return {
+      utilized: this.#loop.utilized,
+      delay: this.#loop.delay,
+      heapUsed: this.#memory.heapUsed,
+      rss: this.#memory.rss
     };
   }
 
