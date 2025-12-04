@@ -11,7 +11,7 @@
     }
   },
   "engines": {
-    "node": ">=16.9.x"
+    "node": ">=24.x"
   },
   "scripts": {
     "build": "tsup src/index.ts --format cjs,esm --dts --clean",
