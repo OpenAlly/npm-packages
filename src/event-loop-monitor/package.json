@@ -1,6 +1,6 @@
 {
   "name": "@openally/event-loop-monitor",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Event Loop Monitor for Node.js to track event loop delay and utilization (framework agnostic)",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
