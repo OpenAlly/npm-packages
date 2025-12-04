@@ -9,7 +9,7 @@ import timers from "node:timers";
 import crypto from "node:crypto";
 
 // Import Internal Dependencies
-import { SynchronousConfig } from "../src/index.js";
+import { SynchronousConfig } from "../src/index.ts";
 
 const __dirname = url.fileURLToPath(new URL(".", import.meta.url));
 

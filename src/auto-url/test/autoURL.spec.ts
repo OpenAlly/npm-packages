@@ -3,9 +3,10 @@ import { describe, it, test } from "node:test";
 import assert from "node:assert/strict";
 
 // Import Internal Dependencies
-import autoURL, { autoURLTransformConfig } from "../src/index";
-// eslint-disable-next-line no-duplicate-imports
-import { autoURL as autoURLBis } from "../src/index";
+import autoURL, {
+  autoURL as autoURLBis,
+  type autoURLTransformConfig
+} from "../src/index.ts";
 
 // CONSTANTS
 const kDummyURL = new URL("https://google.fr");

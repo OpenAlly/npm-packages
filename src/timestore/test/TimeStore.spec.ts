@@ -10,7 +10,7 @@ import { IteratorMatcher, EventListener } from "iterator-matcher";
 import * as sinon from "sinon";
 
 // Import Internal Dependencies
-import { TimeStore, tSv } from "../src/index";
+import { TimeStore, tSv } from "../src/index.ts";
 
 describe("TimeStore", () => {
   it("should have two Symbols property attached to listen to events", () => {

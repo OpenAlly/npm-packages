@@ -1,5 +1,5 @@
 // Import Internal Dependencies
-import { TimeStoreAddOptions } from "./index";
+import type { TimeStoreAddOptions } from "./index.ts";
 
 // CONSTANTS
 export const TSV_SYMBOL = Symbol.for("TimeStoreValue");

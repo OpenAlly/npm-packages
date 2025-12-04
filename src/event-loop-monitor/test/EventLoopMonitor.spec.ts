@@ -3,7 +3,7 @@ import { describe, it, afterEach } from "node:test";
 import assert from "node:assert/strict";
 
 // Import Internal Dependencies
-import { EventLoopMonitor } from "../src/index.js";
+import { EventLoopMonitor } from "../src/index.ts";
 
 describe("EventLoopMonitor", () => {
   let monitor: EventLoopMonitor;

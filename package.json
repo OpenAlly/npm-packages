@@ -3,11 +3,12 @@
   "version": "1.0.0",
   "description": "OpenAlly NPM packages",
   "scripts": {
-    "build": "tsc -b",
+    "build": "npm run build --ws --if-present",
     "test": "npm run test --ws --if-present",
     "lint": "eslint src",
     "ci:publish": "changeset publish",
-    "ci:version": "changeset version"
+    "ci:version": "changeset version",
+    "clean": "clear-ts-build"
   },
   "repository": {
     "type": "git",
@@ -34,15 +35,11 @@
     "@changesets/cli": "^2.29.4",
     "@faker-js/faker": "^10.0.0",
     "@openally/config.eslint": "^2.2.0",
-    "@openally/config.typescript": "^1.0.3",
+    "@openally/config.typescript": "^1.2.1",
     "@types/node": "^24.0.7",
     "c8": "^10.1.2",
-    "cross-env": "^10.0.0",
-    "glob": "^12.0.0",
     "iterator-matcher": "^2.1.0",
-    "sinon": "^21.0.0",
     "tsup": "^8.0.2",
-    "tsx": "^4.7.1",
     "typescript": "^5.4.2"
   }
 }

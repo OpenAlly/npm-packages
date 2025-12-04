@@ -5,13 +5,13 @@ import { EventEmitter } from "node:events";
 import { isDeepStrictEqual } from "node:util";
 
 // Import Third-party Dependencies
-import Ajv, { JSONSchemaType } from "ajv";
+import { Ajv, type JSONSchemaType } from "ajv";
 import Observable from "zen-observable";
 import * as TOML from "smol-toml";
 
 // Import Internal Dependencies
-import * as utils from "./utils.js";
-import * as constants from "./constants.js";
+import * as utils from "./utils.ts";
+import * as constants from "./constants.ts";
 
 // CONSTANTS
 const kAjv = new Ajv({ useDefaults: true });

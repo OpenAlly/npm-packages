@@ -3,7 +3,7 @@ import { describe, it } from "node:test";
 import assert from "node:assert";
 
 // Import Internal Dependencies
-import { tSv, TSV_SYMBOL } from "../src/index";
+import { tSv, TSV_SYMBOL } from "../src/index.ts";
 
 describe("tSv", () => {
   it("should return a function", () => {

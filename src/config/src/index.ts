@@ -1,3 +1,3 @@
 // Import Internal Dependencies
-export * from "./AsynchronousConfig.class.js";
-export * from "./SynchronousConfig.class.js";
+export * from "./AsynchronousConfig.class.ts";
+export * from "./SynchronousConfig.class.ts";

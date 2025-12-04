@@ -3,13 +3,13 @@ import { describe, test } from "node:test";
 import assert from "node:assert/strict";
 
 // Import Internal Dependencies
-import { Ok, Err, Result } from "../src/index.js";
+import { Ok, Err, isResult } from "../src/index.ts";
 
 describe("Ok", () => {
   test("constructor", () => {
     const result = Ok(1);
 
-    assert.ok(Result.isResult(result));
+    assert.ok(isResult(result));
     assert.ok(result.ok);
     assert.strictEqual(result.err, false);
     assert.strictEqual(result.val, 1);

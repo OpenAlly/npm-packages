@@ -3,7 +3,12 @@ import { describe, it } from "node:test";
 import assert from "node:assert";
 
 // Import Internal Dependencies
-import { formatAjvErrors, limitObjectDepth, deepGet, deepSet } from "../src/utils.js";
+import {
+  formatAjvErrors,
+  limitObjectDepth,
+  deepGet,
+  deepSet
+} from "../src/utils.ts";
 
 describe("Utils", () => {
   describe("formatAjvErrors", () => {

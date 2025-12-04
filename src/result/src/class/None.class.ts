@@ -1,5 +1,5 @@
 // Import Internal Dependencies
-import { Err, ErrImpl } from "./Err.class.js";
+import { Err, ErrImpl } from "./Err.class.ts";
 
 export class NoneImpl {
   readonly some = false;

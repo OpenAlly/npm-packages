@@ -3,7 +3,7 @@ import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 
 // Import Internal Dependencies
-import { stringifyValue, isIterable } from "../src/utils.js";
+import { stringifyValue, isIterable } from "../src/utils.ts";
 
 describe("stringifyValue", () => {
   it("should transform all primitives to string", () => {

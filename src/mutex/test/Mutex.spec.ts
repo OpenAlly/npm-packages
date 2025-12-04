@@ -5,7 +5,11 @@ import timers from "node:timers/promises";
 import assert from "node:assert/strict";
 
 // Import Internal Dependencies
-import { Mutex, MutexRelease, MutexCanceledError } from "../src/index.js";
+import {
+  Mutex,
+  MutexRelease,
+  MutexCanceledError
+} from "../src/index.ts";
 
 describe("Mutex", () => {
   describe("constructor", () => {

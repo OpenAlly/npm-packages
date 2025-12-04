@@ -56,7 +56,7 @@ $ yarn add @openally/timestore
 To install and compile all workspaces, just run the following command at the root
 
 ```bash
-$ npm ci
+$ npm install
 $ npm run build
 ```
 

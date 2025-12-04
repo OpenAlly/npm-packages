@@ -1,6 +1,6 @@
 // Import Internal Dependencies
-import { ErrImpl } from "./Err.class.js";
-import { Result } from "../index.js";
+import { ErrImpl } from "./Err.class.ts";
+import type { Result } from "../index.ts";
 
 export class OkImpl<T> {
   readonly ok: true;
