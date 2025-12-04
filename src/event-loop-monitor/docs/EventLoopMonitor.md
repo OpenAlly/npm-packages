@@ -55,6 +55,48 @@ interface EventLoopMonitorOptions {
 
 ## Methods
 
+### `getUtilization(): EventLoopUtilizationMetrics`
+
+Returns the current event loop and memory utilization metrics.
+```ts
+interface EventLoopUtilizationMetrics {
+  /**
+   * Event loop utilization ratio between 0 and 1.
+   * Represents the percentage of time the event loop was active vs idle.
+   */
+  utilized: number;
+
+  /**
+   * Event loop delay in milliseconds.
+   * Higher values indicate the event loop is blocked by long-running operations.
+   */
+  delay: number;
+
+  /**
+   * Current V8 heap memory usage in bytes.
+   */
+  heapUsed?: number;
+
+  /**
+   * Resident Set Size - total memory allocated for the process in bytes.
+   */
+  rss?: number;
+}
+```
+
+**Example:**
+
+```ts
+using monitor = new EventLoopMonitor({
+  maxEventLoopDelay: 100,
+  sampleInterval: 500
+});
+
+const metrics = monitor.getUtilization();
+console.log(`Event loop utilization: ${(metrics.utilized * 100).toFixed(2)}%`);
+console.log(`Event loop delay: ${metrics.delay.toFixed(2)}ms`);
+```
+
 ### `isUnderPressure(): boolean`
 
 Returns `true` if any of the configured thresholds are exceeded:
