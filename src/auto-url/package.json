@@ -2,22 +2,20 @@
   "name": "@openally/auto-url",
   "version": "1.0.1",
   "description": "Utility to build WHATWG URL from an object payload",
-  "main": "./dist/index.js",
-  "module": "./dist/index.mjs",
-  "types": "./dist/index.d.ts",
+  "type": "module",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "require": "./dist/index.js",
-      "import": "./dist/index.mjs"
+      "require": "./dist/index.cjs",
+      "import": "./dist/index.js"
     }
   },
   "scripts": {
     "build": "tsup src/index.ts --format cjs,esm --dts --clean",
     "prepublishOnly": "npm run build",
-    "test-only": "glob -c \"tsx --test\" \"./test/**/*.spec.ts\"",
+    "test-only": "node --test ./test/**/*.spec.ts",
     "test": "c8 --all --src ./src -r html npm run test-only",
-    "lint": "cross-env eslint src/**/*.ts"
+    "lint": "eslint src/**/*.ts"
   },
   "files": [
     "dist"

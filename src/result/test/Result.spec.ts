@@ -3,7 +3,7 @@ import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 
 // Import Internal Dependencies
-import { Result } from "../src/index.js";
+import * as Result from "../src/index.ts";
 
 describe("Result", () => {
   describe("wrap", () => {

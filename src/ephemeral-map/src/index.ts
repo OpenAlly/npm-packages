@@ -15,7 +15,7 @@ import type { RequireAtLeastOne } from "type-fest";
 
 // CONSTANTS
 export const INTERNAL_STORE = Symbol("TimeStore");
-export { tSv, tSvResponse };
+export { tSv, type tSvResponse };
 
 export interface EphemeralMapOptions extends Omit<TimeStoreConstructorOptions, "eventEmitter"> {
   refreshOnGet?: boolean;

@@ -1,5 +1,5 @@
 // Import Internal Dependencies
-import { toString } from "../utils.js";
+import { toString } from "../utils.ts";
 
 export class ErrImpl<E> {
   readonly ok: false;

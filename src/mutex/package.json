@@ -2,22 +2,20 @@
   "name": "@openally/mutex",
   "version": "2.0.0",
   "description": "Another Mutex/Semaphore implementation with first-class support of AbortSignal",
-  "main": "./dist/index.js",
-  "module": "./dist/index.mjs",
-  "types": "./dist/index.d.ts",
+  "type": "module",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "require": "./dist/index.js",
-      "import": "./dist/index.mjs"
+      "require": "./dist/index.cjs",
+      "import": "./dist/index.js"
     }
   },
   "scripts": {
     "build": "tsup src/index.ts --format cjs,esm --dts --clean",
     "prepublishOnly": "npm run build",
-    "test": "glob -c \"tsx --test\" \"./test/**/*.spec.ts\"",
+    "test": "node --test ./test/**/*.spec.ts",
     "coverage": "c8 -r html npm test",
-    "lint": "cross-env eslint src/**/*.ts"
+    "lint": "eslint src/**/*.ts"
   },
   "files": [
     "dist"

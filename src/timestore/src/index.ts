@@ -2,7 +2,7 @@
 import { EventEmitter } from "node:events";
 
 // Import Internal Dependencies
-import { tSv, tSvResponse, TSV_SYMBOL } from "./TimeValue";
+import { tSv, type tSvResponse, TSV_SYMBOL } from "./TimeValue.ts";
 
 // CONSTANTS
 const kUniqueNullValue = Symbol("UniqueNullValue");

@@ -1,5 +1,5 @@
 // Import Internal Dependencies
-import * as utils from "./utils.js";
+import * as utils from "./utils.ts";
 
 export type autoURLTransformCallback = (value: string) => string;
 export type autoURLTransformConfig<T extends string> = Partial<Record<T, autoURLTransformCallback>>;

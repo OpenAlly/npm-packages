@@ -1,2 +1,2 @@
-export * from "./EventLoopMonitor.class.js";
-export * from "./WorkerLoopMonitor.class.js";
+export * from "./EventLoopMonitor.class.ts";
+export * from "./WorkerLoopMonitor.class.ts";

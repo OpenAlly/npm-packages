@@ -9,7 +9,7 @@ import crypto from "node:crypto";
 import { once } from "node:events";
 
 // Import Internal Dependencies
-import { AsynchronousConfig } from "../src/index.js";
+import { AsynchronousConfig } from "../src/index.ts";
 
 const __dirname = url.fileURLToPath(new URL(".", import.meta.url));
 

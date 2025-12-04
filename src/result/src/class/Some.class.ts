@@ -1,7 +1,7 @@
 // Import Internal Dependencies
-import { Ok, OkImpl } from "./Ok.class.js";
-import { None } from "./None.class.js";
-import { toString } from "../utils.js";
+import { Ok, OkImpl } from "./Ok.class.ts";
+import { None } from "./None.class.ts";
+import { toString } from "../utils.ts";
 
 export type Option<T> = SomeImpl<T> | None;
 

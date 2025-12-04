@@ -8,7 +8,7 @@ import timers from "node:timers/promises";
 import { EventListener } from "iterator-matcher";
 
 // Import Internal Dependencies
-import EphemeralMap, { tSv, INTERNAL_STORE } from "../src/index";
+import EphemeralMap, { tSv, INTERNAL_STORE } from "../src/index.ts";
 
 describe("EphemeralMap", () => {
   test("should work like an ECMAScript Map", () => {
