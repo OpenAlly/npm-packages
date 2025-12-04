@@ -1,6 +1,6 @@
 {
   "name": "@openally/result",
-  "version": "1.3.0",
+  "version": "2.0.0",
   "description": "Another inspired Rust's Result implementation.",
   "type": "module",
   "exports": {
