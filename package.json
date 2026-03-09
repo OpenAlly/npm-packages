@@ -31,13 +31,13 @@
   },
   "homepage": "https://github.com/OpenAlly/npm-packages#readme",
   "devDependencies": {
-    "@changesets/changelog-github": "^0.5.1",
+    "@changesets/changelog-github": "^0.6.0",
     "@changesets/cli": "^2.29.4",
     "@faker-js/faker": "^10.0.0",
     "@openally/config.eslint": "^2.2.0",
     "@openally/config.typescript": "^1.2.1",
     "@types/node": "^25.0.3",
-    "c8": "^10.1.2",
+    "c8": "^11.0.0",
     "iterator-matcher": "^2.1.0",
     "tsup": "^8.0.2",
     "typescript": "^5.4.2"
