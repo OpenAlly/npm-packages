@@ -2,7 +2,6 @@
 import { describe, before, after, it, test } from "node:test";
 import assert from "node:assert";
 import path from "node:path";
-import url from "node:url";
 import fs from "node:fs";
 import os from "node:os";
 import timers from "node:timers";
@@ -10,8 +9,6 @@ import crypto from "node:crypto";
 
 // Import Internal Dependencies
 import { SynchronousConfig } from "../src/index.ts";
-
-const __dirname = url.fileURLToPath(new URL(".", import.meta.url));
 
 describe("SynchronousConfig", () => {
   // Keep the event-loop alive while running tests
@@ -41,7 +38,7 @@ describe("SynchronousConfig", () => {
 
     it("should throw when config file has invalid extension", () => {
       assert.throws(() => {
-        new SynchronousConfig(path.join(__dirname, "fixtures", "config.txt"));
+        new SynchronousConfig(path.join(import.meta.dirname, "fixtures", "config.txt"));
       }, {
         name: "Error",
         message: "The config file extension should be .json or .toml, got: .txt"
@@ -49,7 +46,7 @@ describe("SynchronousConfig", () => {
     });
 
     it("should throw when set payload before read", () => {
-      const config = new SynchronousConfig(path.join(__dirname, "fixtures", "withSchema.json"));
+      const config = new SynchronousConfig(path.join(import.meta.dirname, "fixtures", "withSchema.json"));
       assert.throws(() => {
         // @ts-expect-error
         config.payload = null;
@@ -60,7 +57,7 @@ describe("SynchronousConfig", () => {
     });
 
     it("should throw when set empty payload", () => {
-      const config = new SynchronousConfig(path.join(__dirname, "fixtures", "withSchema.json"));
+      const config = new SynchronousConfig(path.join(import.meta.dirname, "fixtures", "withSchema.json"));
       config.read();
       assert.throws(() => {
         // @ts-expect-error
@@ -75,7 +72,7 @@ describe("SynchronousConfig", () => {
     it("should throw when options is not object", () => {
       assert.throws(() => {
         // @ts-expect-error
-        new SynchronousConfig(path.join(__dirname, "fixtures", "config.json"), 42);
+        new SynchronousConfig(path.join(import.meta.dirname, "fixtures", "config.json"), 42);
       }, {
         name: "TypeError",
         message: "The options must be an object"
@@ -85,7 +82,7 @@ describe("SynchronousConfig", () => {
     it("should throw when options.jsonSchema is not an object", () => {
       assert.throws(() => {
         new SynchronousConfig(
-          path.join(__dirname, "fixtures", "withSchema.json"),
+          path.join(import.meta.dirname, "fixtures", "withSchema.json"),
           // @ts-expect-error
           { jsonSchema: 42 }
         );
@@ -96,7 +93,7 @@ describe("SynchronousConfig", () => {
     });
 
     it("should throw when default payload is null or undefined", () => {
-      const config = new SynchronousConfig(path.join(__dirname, "fixtures", "withSchema.json"));
+      const config = new SynchronousConfig(path.join(import.meta.dirname, "fixtures", "withSchema.json"));
       assert.throws(() => {
         // @ts-expect-error
         config.read(null);
@@ -107,7 +104,7 @@ describe("SynchronousConfig", () => {
     });
 
     it("GET should throw fieldPath is not string", () => {
-      const config = new SynchronousConfig(path.join(__dirname, "fixtures", "withSchema.json"));
+      const config = new SynchronousConfig(path.join(import.meta.dirname, "fixtures", "withSchema.json"));
       config.read();
       assert.throws(() => {
         // @ts-expect-error
@@ -118,7 +115,7 @@ describe("SynchronousConfig", () => {
       });
     });
     it("SET should throw fieldPath is not string", () => {
-      const config = new SynchronousConfig(path.join(__dirname, "fixtures", "withSchema.json"));
+      const config = new SynchronousConfig(path.join(import.meta.dirname, "fixtures", "withSchema.json"));
       config.read();
       assert.throws(() => {
         // @ts-expect-error
@@ -189,14 +186,14 @@ describe("SynchronousConfig", () => {
 
     it("should get empty payload without calling read", () => {
       const config = new SynchronousConfig(
-        path.join(__dirname, "fixtures", "withSchema.json")
+        path.join(import.meta.dirname, "fixtures", "withSchema.json")
       );
       assert.deepStrictEqual(config.payload, {});
     });
 
     it("should find withSchema.json when withSchema given (without extension)", () => {
       const config = new SynchronousConfig(
-        path.join(__dirname, "fixtures", "withSchema")
+        path.join(import.meta.dirname, "fixtures", "withSchema")
       );
       config.read();
       assert.deepStrictEqual(config.payload, { foo: "bar", name: 42 });
@@ -205,7 +202,7 @@ describe("SynchronousConfig", () => {
 
     it("should create an empty config object when file is empty", () => {
       const config = new SynchronousConfig(
-        path.join(__dirname, "fixtures", ".empty")
+        path.join(import.meta.dirname, "fixtures", ".empty")
       );
       config.read();
       assert.deepStrictEqual(config.payload, {});
@@ -214,7 +211,7 @@ describe("SynchronousConfig", () => {
 
     it("should return null when field does not exists", () => {
       const config = new SynchronousConfig(
-        path.join(__dirname, "fixtures", "withSchema.json")
+        path.join(import.meta.dirname, "fixtures", "withSchema.json")
       );
       config.read();
       assert.strictEqual(config.get("doesNotExists"), null);
@@ -223,7 +220,7 @@ describe("SynchronousConfig", () => {
 
     it("should get keys when using depth", () => {
       const config = new SynchronousConfig(
-        path.join(__dirname, "fixtures", "nested.json")
+        path.join(import.meta.dirname, "fixtures", "nested.json")
       );
       config.read();
       assert.deepStrictEqual(config.get("user"), {
@@ -244,7 +241,7 @@ describe("SynchronousConfig", () => {
 
   describe("JSON Schema", () => {
     it("should throw when set invalid value", () => {
-      const config = new SynchronousConfig(path.join(__dirname, "fixtures", "withSchema.json"), {
+      const config = new SynchronousConfig(path.join(import.meta.dirname, "fixtures", "withSchema.json"), {
         writeOnSet: true
       });
       config.read();
@@ -258,7 +255,7 @@ describe("SynchronousConfig", () => {
     });
 
     it("should throw with default payload", () => {
-      const config = new SynchronousConfig(path.join(__dirname, "fixtures", ".config"), {
+      const config = new SynchronousConfig(path.join(import.meta.dirname, "fixtures", ".config"), {
         writeOnSet: false,
         jsonSchema: {
           type: "object",
@@ -278,7 +275,7 @@ describe("SynchronousConfig", () => {
     });
 
     it("should have a valid config once read", () => {
-      const config = new SynchronousConfig(path.join(__dirname, "fixtures", ".config"), {
+      const config = new SynchronousConfig(path.join(import.meta.dirname, "fixtures", ".config"), {
         writeOnSet: false,
         jsonSchema: {
           type: "object",
@@ -342,8 +339,8 @@ describe("SynchronousConfig", () => {
   describe("read() formats", () => {
     test("Given TOML configuration files with and without extensions, it must successfully read their contents", () => {
       const cases = [
-        path.join(__dirname, "fixtures", "config.toml"),
-        path.join(__dirname, "fixtures", "config")
+        path.join(import.meta.dirname, "fixtures", "config.toml"),
+        path.join(import.meta.dirname, "fixtures", "config")
       ];
 
       for (const configPath of cases) {
@@ -362,7 +359,7 @@ describe("SynchronousConfig", () => {
 
     test("Given a configuration file no extension (starting with a dot), it must read it with no error", () => {
       const config = new SynchronousConfig(
-        path.join(__dirname, "fixtures", ".dotconfig")
+        path.join(import.meta.dirname, "fixtures", ".dotconfig")
       );
       config.read();
       assert.deepStrictEqual(config.payload, {
@@ -376,7 +373,7 @@ describe("SynchronousConfig", () => {
   describe("When config has not been read", () => {
     it("should throw when writeOnDisk is called", () => {
       const config = new SynchronousConfig(
-        path.join(__dirname, "fixtures", ".dotconfig")
+        path.join(import.meta.dirname, "fixtures", ".dotconfig")
       );
 
       assert.throws(() => {
@@ -389,7 +386,7 @@ describe("SynchronousConfig", () => {
 
     it("should not throw and return without emitting close event", () => {
       const config = new SynchronousConfig(
-        path.join(__dirname, "fixtures", ".dotconfig")
+        path.join(import.meta.dirname, "fixtures", ".dotconfig")
       );
       let closeEmit = 0;
       config.on("close", () => closeEmit++);
@@ -404,7 +401,7 @@ describe("SynchronousConfig", () => {
 
     it("should throw when set is called", () => {
       const config = new SynchronousConfig(
-        path.join(__dirname, "fixtures", ".dotconfig")
+        path.join(import.meta.dirname, "fixtures", ".dotconfig")
       );
 
       assert.throws(() => {
@@ -417,7 +414,7 @@ describe("SynchronousConfig", () => {
 
     it("should throw when get is called", () => {
       const config = new SynchronousConfig(
-        path.join(__dirname, "fixtures", ".dotconfig")
+        path.join(import.meta.dirname, "fixtures", ".dotconfig")
       );
 
       assert.throws(() => {
@@ -431,7 +428,7 @@ describe("SynchronousConfig", () => {
 
   test("Given a JSON configuration file with a SyntaxError, read() method must return it", () => {
     const config = new SynchronousConfig(
-      path.join(__dirname, "fixtures", "syntaxError.json")
+      path.join(import.meta.dirname, "fixtures", "syntaxError.json")
     );
 
     assert.throws(() => {

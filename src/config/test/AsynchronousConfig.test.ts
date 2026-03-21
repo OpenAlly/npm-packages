@@ -2,7 +2,6 @@
 import { describe, before, after, it, test } from "node:test";
 import assert from "node:assert";
 import path from "node:path";
-import url from "node:url";
 import fs from "node:fs";
 import os from "node:os";
 import crypto from "node:crypto";
@@ -10,8 +9,6 @@ import { once } from "node:events";
 
 // Import Internal Dependencies
 import { AsynchronousConfig } from "../src/index.ts";
-
-const __dirname = url.fileURLToPath(new URL(".", import.meta.url));
 
 type FooConfig = { foo: string; };
 
@@ -42,7 +39,7 @@ describe("AsynchronousConfig", () => {
 
     it("should throw when config file has invalid extension", () => {
       assert.throws(() => {
-        new AsynchronousConfig(path.join(__dirname, "fixtures", "config.txt"));
+        new AsynchronousConfig(path.join(import.meta.dirname, "fixtures", "config.txt"));
       }, {
         name: "Error",
         message: "The config file extension should be .json or .toml, got: .txt"
@@ -50,7 +47,7 @@ describe("AsynchronousConfig", () => {
     });
 
     it("should throw when set payload before read", () => {
-      const config = new AsynchronousConfig(path.join(__dirname, "fixtures", "withSchema.json"));
+      const config = new AsynchronousConfig(path.join(import.meta.dirname, "fixtures", "withSchema.json"));
       assert.throws(() => {
         config.payload = null as any;
       }, {
@@ -60,7 +57,7 @@ describe("AsynchronousConfig", () => {
     });
 
     it("should throw when set empty payload", async() => {
-      const config = new AsynchronousConfig(path.join(__dirname, "fixtures", "withSchema.json"));
+      const config = new AsynchronousConfig(path.join(import.meta.dirname, "fixtures", "withSchema.json"));
       await config.read();
       assert.throws(() => {
         config.payload = null as any;
@@ -73,7 +70,7 @@ describe("AsynchronousConfig", () => {
 
     it("should throw when options is not object", () => {
       assert.throws(() => {
-        new AsynchronousConfig(path.join(__dirname, "fixtures", "config.json"), 42 as any);
+        new AsynchronousConfig(path.join(import.meta.dirname, "fixtures", "config.json"), 42 as any);
       }, {
         name: "TypeError",
         message: "The options must be an object"
@@ -82,7 +79,7 @@ describe("AsynchronousConfig", () => {
 
     it("should throw when options.jsonSchema is not an object", () => {
       assert.throws(() => {
-        new AsynchronousConfig(path.join(__dirname, "fixtures", "withSchema.json"), { jsonSchema: 42 as any });
+        new AsynchronousConfig(path.join(import.meta.dirname, "fixtures", "withSchema.json"), { jsonSchema: 42 as any });
       }, {
         name: "TypeError",
         message: "The options.jsonSchema must be an object"
@@ -90,7 +87,7 @@ describe("AsynchronousConfig", () => {
     });
 
     it("should throw when default payload is null or undefined", async() => {
-      const config = new AsynchronousConfig(path.join(__dirname, "fixtures", "withSchema.json"));
+      const config = new AsynchronousConfig(path.join(import.meta.dirname, "fixtures", "withSchema.json"));
       await assert.rejects(async() => {
         await config.read(null as any);
       }, {
@@ -100,7 +97,7 @@ describe("AsynchronousConfig", () => {
     });
 
     it("GET should throw fieldPath is not string", async() => {
-      const config = new AsynchronousConfig(path.join(__dirname, "fixtures", "withSchema.json"));
+      const config = new AsynchronousConfig(path.join(import.meta.dirname, "fixtures", "withSchema.json"));
       await config.read();
       assert.throws(() => {
         config.get(42 as any);
@@ -110,7 +107,7 @@ describe("AsynchronousConfig", () => {
       });
     });
     it("SET should throw fieldPath is not string", async() => {
-      const config = new AsynchronousConfig(path.join(__dirname, "fixtures", "withSchema.json"));
+      const config = new AsynchronousConfig(path.join(import.meta.dirname, "fixtures", "withSchema.json"));
       await config.read();
       assert.throws(() => {
         config.set(42 as any, { foo: "bar" });
@@ -189,14 +186,14 @@ describe("AsynchronousConfig", () => {
 
     it("should get empty payload without calling read", () => {
       const config = new AsynchronousConfig(
-        path.join(__dirname, "fixtures", "withSchema.json")
+        path.join(import.meta.dirname, "fixtures", "withSchema.json")
       );
       assert.deepStrictEqual(config.payload, {});
     });
 
     it("should find withSchema.json when withSchema given (without extension)", async(t) => {
       const config = new AsynchronousConfig(
-        path.join(__dirname, "fixtures", "withSchema")
+        path.join(import.meta.dirname, "fixtures", "withSchema")
       );
       t.after(() => config.close());
 
@@ -206,7 +203,7 @@ describe("AsynchronousConfig", () => {
 
     it("should create an empty config object when file is empty", async(t) => {
       const config = new AsynchronousConfig(
-        path.join(__dirname, "fixtures", ".empty")
+        path.join(import.meta.dirname, "fixtures", ".empty")
       );
       t.after(() => config.close());
 
@@ -216,7 +213,7 @@ describe("AsynchronousConfig", () => {
 
     it("should return null when field does not exists", async(t) => {
       const config = new AsynchronousConfig(
-        path.join(__dirname, "fixtures", "withSchema.json")
+        path.join(import.meta.dirname, "fixtures", "withSchema.json")
       );
       t.after(() => config.close());
 
@@ -226,7 +223,7 @@ describe("AsynchronousConfig", () => {
 
     it("should get keys when using depth", async(t) => {
       const config = new AsynchronousConfig(
-        path.join(__dirname, "fixtures", "nested.json")
+        path.join(import.meta.dirname, "fixtures", "nested.json")
       );
       t.after(() => config.close());
 
@@ -329,7 +326,7 @@ describe("AsynchronousConfig", () => {
 
   describe("JSON Schema", () => {
     it("should throw when set invalid value", async(t) => {
-      const config = new AsynchronousConfig(path.join(__dirname, "fixtures", "withSchema.json"), {
+      const config = new AsynchronousConfig(path.join(import.meta.dirname, "fixtures", "withSchema.json"), {
         writeOnSet: true
       });
       t.after(() => config.close());
@@ -344,7 +341,7 @@ describe("AsynchronousConfig", () => {
     });
 
     it("should throw with default payload", async() => {
-      const config = new AsynchronousConfig(path.join(__dirname, "fixtures", ".config"), {
+      const config = new AsynchronousConfig(path.join(import.meta.dirname, "fixtures", ".config"), {
         writeOnSet: false,
         jsonSchema: {
           type: "object",
@@ -365,7 +362,7 @@ describe("AsynchronousConfig", () => {
     });
 
     it("should have a valid config once read", async(t) => {
-      const config = new AsynchronousConfig<FooConfig>(path.join(__dirname, "fixtures", ".config"), {
+      const config = new AsynchronousConfig<FooConfig>(path.join(import.meta.dirname, "fixtures", ".config"), {
         writeOnSet: false,
         jsonSchema: {
           type: "object",
@@ -441,8 +438,8 @@ describe("AsynchronousConfig", () => {
   describe("read() formats", () => {
     test("Given TOML configuration files with and without extensions, it must successfully read their contents", async() => {
       const cases = [
-        path.join(__dirname, "fixtures", "config.toml"),
-        path.join(__dirname, "fixtures", "config")
+        path.join(import.meta.dirname, "fixtures", "config.toml"),
+        path.join(import.meta.dirname, "fixtures", "config")
       ];
 
       for (const configPath of cases) {
@@ -466,7 +463,7 @@ describe("AsynchronousConfig", () => {
 
     test("Given a configuration file no extension (starting with a dot), it must read it with no error", async(t) => {
       const config = new AsynchronousConfig(
-        path.join(__dirname, "fixtures", ".dotconfig")
+        path.join(import.meta.dirname, "fixtures", ".dotconfig")
       );
       t.after(async() => await config.close());
 
@@ -481,7 +478,7 @@ describe("AsynchronousConfig", () => {
   describe("When config has not been read", () => {
     it("should throw when writeOnDisk is called", async() => {
       const config = new AsynchronousConfig(
-        path.join(__dirname, "fixtures", ".dotconfig")
+        path.join(import.meta.dirname, "fixtures", ".dotconfig")
       );
 
       await assert.rejects(async() => {
@@ -494,7 +491,7 @@ describe("AsynchronousConfig", () => {
 
     it("should not throw and return without emitting close event", async() => {
       const config = new AsynchronousConfig(
-        path.join(__dirname, "fixtures", ".dotconfig")
+        path.join(import.meta.dirname, "fixtures", ".dotconfig")
       );
       let closeEmit = 0;
       config.on("close", () => closeEmit++);
@@ -509,7 +506,7 @@ describe("AsynchronousConfig", () => {
 
     it("should throw when set is called", () => {
       const config = new AsynchronousConfig(
-        path.join(__dirname, "fixtures", ".dotconfig")
+        path.join(import.meta.dirname, "fixtures", ".dotconfig")
       );
 
       assert.throws(() => {
@@ -522,7 +519,7 @@ describe("AsynchronousConfig", () => {
 
     it("should throw when get is called", () => {
       const config = new AsynchronousConfig(
-        path.join(__dirname, "fixtures", ".dotconfig")
+        path.join(import.meta.dirname, "fixtures", ".dotconfig")
       );
 
       assert.throws(() => {
@@ -535,7 +532,7 @@ describe("AsynchronousConfig", () => {
 
     it("should throw when setup autoReload", () => {
       const config = new AsynchronousConfig(
-        path.join(__dirname, "fixtures", ".dotconfig")
+        path.join(import.meta.dirname, "fixtures", ".dotconfig")
       );
 
       assert.throws(() => {
@@ -549,7 +546,7 @@ describe("AsynchronousConfig", () => {
 
   test("Given a JSON configuration file with a SyntaxError, read() method must return it", async() => {
     const config = new AsynchronousConfig(
-      path.join(__dirname, "fixtures", "syntaxError.json")
+      path.join(import.meta.dirname, "fixtures", "syntaxError.json")
     );
 
     await assert.rejects(async() => {
