@@ -40,6 +40,6 @@
     "c8": "^11.0.0",
     "iterator-matcher": "^2.1.0",
     "tsup": "^8.0.2",
-    "typescript": "^5.4.2"
+    "typescript": "^6.0.2"
   }
 }
