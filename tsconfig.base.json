@@ -2,7 +2,7 @@
   "extends": "@openally/config.typescript/esm-ts-next",
   "compilerOptions": {
     "composite": false,
-    "types": ["node"],
-    "lib": ["ES2024"]
+    "ignoreDeprecations": "6.0",
+    "types": ["node"]
   }
 }
