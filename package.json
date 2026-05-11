@@ -31,7 +31,7 @@
   },
   "homepage": "https://github.com/OpenAlly/npm-packages#readme",
   "devDependencies": {
-    "@changesets/changelog-github": "^0.6.0",
+    "@changesets/changelog-github": "^0.7.0",
     "@changesets/cli": "^2.29.4",
     "@faker-js/faker": "^10.0.0",
     "@openally/config.eslint": "^2.2.0",
