@@ -58,4 +58,53 @@ describe("Ok", () => {
     assert.strictEqual(result.ok, false);
     assert.ok(result.err);
   });
+
+  test("orElse", () => {
+    const result = Ok(1).orElse(() => Err("oops"));
+
+    assert.strictEqual(result.unwrap(), 1);
+  });
+
+  test("isOk, isErr", () => {
+    assert.strictEqual(Ok(1).isOk(), true);
+    assert.strictEqual(Ok(1).isErr(), false);
+  });
+
+  test("match", () => {
+    const result = Ok(1).match(
+      (val) => val + 1,
+      () => -1
+    );
+
+    assert.strictEqual(result, 2);
+  });
+
+  test("andTee", () => {
+    let sideEffect = 0;
+    const result = Ok(1).andTee((val) => {
+      sideEffect = val + 1;
+    });
+
+    assert.strictEqual(sideEffect, 2);
+    assert.strictEqual(result.unwrap(), 1);
+  });
+
+  test("orTee", () => {
+    let sideEffect = 0;
+    const result = Ok(1).orTee(() => {
+      sideEffect = 1;
+    });
+
+    assert.strictEqual(sideEffect, 0);
+    assert.strictEqual(result.unwrap(), 1);
+  });
+
+  test("andThrough", () => {
+    const okResult = Ok(1).andThrough(() => Ok("validated"));
+    assert.strictEqual(okResult.unwrap(), 1);
+
+    const errResult = Ok(1).andThrough(() => Err("invalid"));
+    assert.strictEqual(errResult.ok, false);
+    assert.ok(errResult.err);
+  });
 });

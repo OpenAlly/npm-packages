@@ -1,6 +1,6 @@
 // Import Internal Dependencies
 import { ErrImpl } from "./Err.class.ts";
-import type { Result } from "../index.ts";
+import type { Result } from "../types.ts";
 
 export class OkImpl<T> {
   readonly ok: true;
@@ -29,7 +29,9 @@ export class OkImpl<T> {
     return this.val;
   }
 
-  map<T2>(mapper: (val: T) => T2): OkImpl<T2> {
+  map<T2>(
+    mapper: (val: T) => T2
+  ): OkImpl<T2> {
     return new OkImpl(mapper(this.val));
   }
 
@@ -56,6 +58,45 @@ export class OkImpl<T> {
   andThen<T2, E2>(mapper: (val: T) => Result<T2, E2>): Result<T2, E2>;
   andThen<T2, E2>(mapper: (val: T) => Result<T2, E2>): Result<T2, E2> {
     return mapper(this.val);
+  }
+
+  orElse(_mapper: unknown): OkImpl<T> {
+    return this;
+  }
+
+  isOk(): true {
+    return true;
+  }
+
+  isErr(): false {
+    return false;
+  }
+
+  match<A, B>(
+    okMapper: (val: T) => A,
+    _errMapper: (err: unknown) => B
+  ): A | B {
+    return okMapper(this.val);
+  }
+
+  andTee(
+    mapper: (val: T) => unknown
+  ): OkImpl<T> {
+    mapper(this.val);
+
+    return this;
+  }
+
+  orTee(_mapper: unknown): OkImpl<T> {
+    return this;
+  }
+
+  andThrough<E2>(
+    mapper: (val: T) => Result<unknown, E2>
+  ): Result<T, E2> {
+    const result = mapper(this.val);
+
+    return result.err ? result : this;
   }
 }
 

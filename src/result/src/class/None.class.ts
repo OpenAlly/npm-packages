@@ -5,7 +5,15 @@ export class NoneImpl {
   readonly some = false;
   readonly none = true;
 
+  expect(msg: string): never {
+    throw new Error(msg);
+  }
+
   unwrap(): never {
+    throw new Error("Tried to unwrap None");
+  }
+
+  safeUnwrap(): never {
     throw new Error("Tried to unwrap None");
   }
 

@@ -77,6 +77,53 @@ describe("Err", () => {
       { message: "oops" }
     );
   });
+
+  test("orElse", () => {
+    const result = Err("oops").orElse(() => Ok(5));
+
+    assert.strictEqual(result.unwrap(), 5);
+  });
+
+  test("isOk, isErr", () => {
+    assert.strictEqual(Err("oops").isOk(), false);
+    assert.strictEqual(Err("oops").isErr(), true);
+  });
+
+  test("match", () => {
+    const result = Err("oops").match(
+      () => -1,
+      (err) => `error: ${err}`
+    );
+
+    assert.strictEqual(result, "error: oops");
+  });
+
+  test("andTee", () => {
+    let sideEffect = 0;
+    const result = Err("oops").andTee(() => {
+      sideEffect = 1;
+    });
+
+    assert.strictEqual(sideEffect, 0);
+    assert.strictEqual(result.err, true);
+  });
+
+  test("orTee", () => {
+    let sideEffect = 0;
+    const result = Err("oops").orTee((err) => {
+      sideEffect = err.length;
+    });
+
+    assert.strictEqual(sideEffect, 4);
+    assert.strictEqual(result.err, true);
+  });
+
+  test("andThrough", () => {
+    const result = Err("oops").andThrough(() => Ok("validated"));
+
+    assert.strictEqual(result.err, true);
+    assert.strictEqual(result.val, "oops");
+  });
 });
 
 class CustomError extends Error {
