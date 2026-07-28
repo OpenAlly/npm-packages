@@ -1,5 +1,6 @@
 // Import Internal Dependencies
 import { toString } from "../utils.ts";
+import type { Result } from "../types.ts";
 
 export class ErrImpl<E> {
   readonly ok: false;
@@ -33,7 +34,9 @@ export class ErrImpl<E> {
     return val;
   }
 
-  unwrapOrElse<T2>(mapper: (val: E) => T2): T2 {
+  unwrapOrElse<T2>(
+    mapper: (val: E) => T2
+  ): T2 {
     return mapper(this.val);
   }
 
@@ -55,11 +58,50 @@ export class ErrImpl<E> {
     return default_(this.val);
   }
 
-  mapErr<E2>(mapper: (err: E) => E2): ErrImpl<E2> {
+  mapErr<E2>(
+    mapper: (err: E) => E2
+  ): ErrImpl<E2> {
     return new ErrImpl(mapper(this.val));
   }
 
   andThen(_op: unknown): ErrImpl<E> {
+    return this;
+  }
+
+  orElse<T2, E2>(
+    mapper: (err: E) => Result<T2, E2>
+  ): Result<T2, E2> {
+    return mapper(this.val);
+  }
+
+  isOk(): false {
+    return false;
+  }
+
+  isErr(): true {
+    return true;
+  }
+
+  match<A, B>(
+    _okMapper: (val: unknown) => A,
+    errMapper: (err: E) => B
+  ): A | B {
+    return errMapper(this.val);
+  }
+
+  andTee(_mapper: unknown): ErrImpl<E> {
+    return this;
+  }
+
+  orTee(
+    mapper: (err: E) => unknown
+  ): ErrImpl<E> {
+    mapper(this.val);
+
+    return this;
+  }
+
+  andThrough(_mapper: unknown): ErrImpl<E> {
     return this;
   }
 

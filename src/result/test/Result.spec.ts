@@ -29,4 +29,44 @@ describe("Result", () => {
       );
     });
   });
+
+  describe("combine", () => {
+    it("should combine an array of Ok into an Ok of array", () => {
+      const result = Result.combine([Result.Ok(1), Result.Ok("foo"), Result.Ok(true)]);
+
+      assert.ok(result.ok);
+      assert.deepEqual(result.unwrap(), [1, "foo", true]);
+    });
+
+    it("should short-circuit on the first Err", () => {
+      const result = Result.combine([
+        Result.Ok(1),
+        Result.Err("oops"),
+        Result.Err("never reached")
+      ]);
+
+      assert.strictEqual(result.err, true);
+      assert.strictEqual(result.val, "oops");
+    });
+  });
+
+  describe("combineWithAllErrors", () => {
+    it("should combine an array of Ok into an Ok of array", () => {
+      const result = Result.combineWithAllErrors([Result.Ok(1), Result.Ok(2)]);
+
+      assert.ok(result.ok);
+      assert.deepEqual(result.unwrap(), [1, 2]);
+    });
+
+    it("should collect every Err instead of short-circuiting", () => {
+      const result = Result.combineWithAllErrors([
+        Result.Ok(1),
+        Result.Err("first"),
+        Result.Err("second")
+      ]);
+
+      assert.strictEqual(result.err, true);
+      assert.deepEqual(result.val, ["first", "second"]);
+    });
+  });
 });
