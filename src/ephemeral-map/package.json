@@ -3,18 +3,13 @@
   "version": "2.0.0",
   "description": "ES6 Map-Like implementation with keys that have a defined timelife",
   "type": "module",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "require": "./dist/index.cjs",
-      "import": "./dist/index.js"
-    }
-  },
+  "exports": "./dist/index.js",
   "scripts": {
-    "build": "tsup src/index.ts --format cjs,esm --dts --clean",
-    "prepublishOnly": "npm run build",
-    "test": "node --test ./test/**/*.spec.ts",
-    "coverage": "c8 --all --src ./src -r html npm test",
+    "build": "tsc",
+    "prepublishOnly": "npm run test-export",
+    "test-only": "node --test ./test/**/*.spec.ts",
+    "test-export": "npm run build && attw --pack . --profile esm-only",
+    "test": "npm run test-export && c8 --all --src ./src -r html npm run test-only",
     "lint": "eslint src/**/*.ts"
   },
   "publishConfig": {
@@ -24,7 +19,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/OpenAlly/npm-packages",
+    "url": "git+https://github.com/OpenAlly/npm-packages.git",
     "directory": "src/ephemeral-map"
   },
   "files": [

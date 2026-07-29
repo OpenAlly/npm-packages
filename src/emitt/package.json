@@ -9,9 +9,10 @@
   },
   "scripts": {
     "build": "tsc",
-    "prepublishOnly": "npm run build",
-    "test": "node --test ./test/**/*.spec.ts",
-    "coverage": "c8 -r html npm test",
+    "prepublishOnly": "npm run test-export",
+    "test-only": "node --test ./test/**/*.spec.ts",
+    "test-export": "npm run build && attw --pack . --profile esm-only",
+    "test": "npm run test-export && c8 -r html npm run test-only",
     "lint": "eslint src/**/*.ts"
   },
   "publishConfig": {
@@ -21,7 +22,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/OpenAlly/npm-packages",
+    "url": "git+https://github.com/OpenAlly/npm-packages.git",
     "directory": "src/emitt"
   },
   "files": [

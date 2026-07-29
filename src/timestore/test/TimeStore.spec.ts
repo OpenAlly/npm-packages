@@ -1,13 +1,12 @@
 // Import Node.js Dependencies
 import { EventEmitter, once } from "node:events";
-import { describe, it } from "node:test";
+import { describe, it, mock } from "node:test";
 import assert from "node:assert";
 import * as timers from "node:timers/promises";
 
 // Import Third-party Dependencies
 import { faker } from "@faker-js/faker";
 import { IteratorMatcher, EventListener } from "iterator-matcher";
-import * as sinon from "sinon";
 
 // Import Internal Dependencies
 import { TimeStore, tSv } from "../src/index.ts";
@@ -55,7 +54,7 @@ describe("TimeStore", () => {
     });
 
     it("should expire all identifiers on process 'exit' event if expireIdentifiersOnProcessExit options is enabled", async() => {
-      const processExitStub = sinon.stub(process, "exit");
+      const processExitStub = mock.method(process, "exit", () => void 0);
       const ttl = 100;
 
       try {
@@ -75,7 +74,7 @@ describe("TimeStore", () => {
         assert.equal(counter.listenerCount, numberOfElements);
       }
       finally {
-        processExitStub.restore();
+        processExitStub.mock.restore();
       }
     });
   });
