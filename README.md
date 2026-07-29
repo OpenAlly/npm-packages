@@ -14,17 +14,11 @@
   <a href="https://github.com/OpenAlly/npm-packages">
     <img src="https://img.shields.io/github/license/OpenAlly/npm-packages?style=for-the-badge" alt="license">
   </a>
-  <a href="https://github.com/OpenAlly/npm-packages">
-    <img src="https://img.shields.io/maintenance/yes/2025?style=for-the-badge" alt="maintained">
-  </a>
   <a href="https://api.securityscorecards.dev/projects/github.com/OpenAlly/npm-packages">
     <img src="https://api.securityscorecards.dev/projects/github.com/OpenAlly/npm-packages/badge?style=for-the-badge" alt="ossf scorecard">
   </a>
   <a href="https://github.com/OpenAlly/npm-packages">
     <img src="https://img.shields.io/badge/Typescript-294E80.svg?style=for-the-badge&logo=typescript" alt="typescript">
-  </a>
-  <a href="https://github.com/OpenAlly/npm-packages">
-    <img src="https://img.shields.io/static/v1?&label=module&message=ESM%20and%20CJS&color=9cf&style=for-the-badge" alt="esm-cjs">
   </a>
 </p>
 
