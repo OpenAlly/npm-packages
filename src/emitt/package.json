@@ -1,0 +1,33 @@
+{
+  "name": "@openally/emitt",
+  "version": "1.0.0",
+  "description": "Type-safe EventEmitter for Node.js and Browser",
+  "type": "module",
+  "exports": "./dist/index.js",
+  "engines": {
+    "node": ">=24.x"
+  },
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build",
+    "test": "node --test ./test/**/*.spec.ts",
+    "coverage": "c8 -r html npm test",
+    "lint": "eslint src/**/*.ts"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org",
+    "access": "public",
+    "provenance": true
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/OpenAlly/npm-packages",
+    "directory": "src/emitt"
+  },
+  "files": [
+    "dist"
+  ],
+  "keywords": [],
+  "author": "GENTILHOMME Thomas <gentilhomme.thomas@gmail.com>",
+  "license": "MIT"
+}

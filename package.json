@@ -23,7 +23,8 @@
     "src/result",
     "src/auto-url",
     "src/config",
-    "src/event-loop-monitor"
+    "src/event-loop-monitor",
+    "src/emitt"
   ],
   "license": "MIT",
   "bugs": {
