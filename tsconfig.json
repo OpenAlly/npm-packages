@@ -21,6 +21,9 @@
     },
     {
       "path": "./src/event-loop-monitor"
+    },
+    {
+      "path": "./src/emitt"
     }
   ]
 }
