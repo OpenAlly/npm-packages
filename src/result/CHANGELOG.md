@@ -1,5 +1,11 @@
 # @openally/result
 
+## 3.1.0
+
+### Minor Changes
+
+- [#307](https://github.com/OpenAlly/npm-packages/pull/307) [`3227a4f`](https://github.com/OpenAlly/npm-packages/commit/3227a4f88953f93598cdc104b9192c57d84b336a) Thanks [@fraxken](https://github.com/fraxken)! - Introduce Option.from to collapse value to either Some(value) or None for undefined and null primitive.
+
 ## 3.0.0
 
 ### Major Changes
