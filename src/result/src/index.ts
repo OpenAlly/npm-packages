@@ -2,7 +2,7 @@
 import { Ok, OkImpl } from "./class/Ok.class.ts";
 import { Err, ErrImpl } from "./class/Err.class.ts";
 
-export { type Option, Some } from "./class/Some.class.ts";
+export { Option, Some } from "./class/Some.class.ts";
 export { None } from "./class/None.class.ts";
 export { Ok, Err };
 
