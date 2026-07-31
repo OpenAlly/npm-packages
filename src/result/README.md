@@ -25,55 +25,64 @@ $ yarn add @openally/result
 
 ```ts
 import fs from "node:fs";
-import { Result, Ok, Err } from "@openally/result";
+import {
+  Ok, Err, Option, wrap, type Result
+} from "@openally/result";
 
-function readFile(path: string): Result<string, "invalid path"> {
-  if (existsSync(path)) {
-    return Ok(fs.readFileSync(path, "utf8"));
-  }
-
-  return Err("invalid path");
+interface Config {
+  host: string;
+  port: number;
 }
 
-const fileContentStr = readFile("test.txt").unwrap();
-console.log(fileContentStr);
-```
+function readConfigFile(
+  path: string
+): Result<string, string> {
+  return fs.existsSync(path) ?
+    Ok(fs.readFileSync(path, "utf8")) :
+    Err(`config file not found at "${path}"`);
+}
 
-Where `Result` is either an `Ok` or an `Err`
+function parseJSON(
+  raw: string
+): Result<Record<string, unknown>, string> {
+  return wrap<Record<string, unknown>, Error>(() => JSON.parse(raw))
+    .mapErr((error) => `invalid JSON: ${error.message}`);
+}
 
-```ts
-type Result<T, E> = OkImpl<T> | ErrImpl<E>;
-```
+function toConfig(
+  record: Record<string, unknown>
+): Result<Config, string> {
+  const { host, port } = record;
 
----
+  return typeof host === "string" && typeof port === "number" ?
+    Ok({ host, port }) :
+    Err("config must have a string `host` and a numeric `port`");
+}
 
-You can combine this package with [ts-pattern](https://github.com/gvergnaud/ts-pattern#readme), here is an example;
-
-```ts
-return match(constraint.type)
-  .with("PRIMARY KEY", () => (
-    column.isPrimary ? None : Some({ columnName, type: "MISSING PK" })
-  ))
-  .with("UNIQUE", () => helper
-    .getUniqueByColumnName(columnName)
-    .unwrapOr(Some({ columnName, type: "MISSING UNIQUE" }))
-  )
-  .with("FOREIGN KEY", () => helper
-    .getForeignKeyByColumnName(columnName)
-    .andThen((fk) => {
-      return helper.fkIsMatchingConstraint(fk, constraint) ?
-        Some({ columnName, type: "INVALID FK REFERENCE", constraint }) :
-        None;
+function configFromEnv(): Result<Config, string> {
+  return Option.from(process.env.HOST)
+    .andThen((host) => {
+      return Option.from(process.env.PORT)
+        .map((port) => ({ host, port: Number(port) }));
     })
-    .unwrapOr(Some({ columnName, type: "MISSING FK" }))
-  )
-  .otherwise(() => None) as Option<IConstraintDifference>;
-```
+    .toResult("no config file and no HOST/PORT environment variables set");
+}
 
-Where `Option` is defined as being `Some` value or `None`.
+function loadConfig(path: string): Result<Config, string> {
+  return readConfigFile(path)
+    .andThen(parseJSON)
+    .andTee((record) => console.log("loaded raw config:", record))
+    .andThen(toConfig)
+    .orElse(() => configFromEnv());
+}
 
-```ts
-type Option<T> = SomeImpl<T> | None
+loadConfig("config.json").match(
+  (config) => console.log(`ready on ${config.host}:${config.port}`),
+  (error) => {
+    console.error(`failed to load config: ${error}`);
+    process.exit(1);
+  }
+);
 ```
 
 ## Table of contents
@@ -97,6 +106,7 @@ type Option<T> = SomeImpl<T> | None
   - [stack (Err only)](#stack-err-only)
 - [Option API](#option-api)
   - [Constructors: Some, None](#constructors-some-none)
+  - [Option.from](#optionfrom)
   - [unwrap, unwrapOr, unwrapOrElse, safeUnwrap, expect](#unwrap-unwrapor-unwraporelse-safeunwrap-expect)
   - [map, mapOr, mapOrElse](#map-mapor-maporelse)
   - [andThen](#andthen-1)
@@ -284,6 +294,19 @@ const None: NoneImpl;
 ```ts
 const present = Some(1);
 const absent = None;
+```
+
+### Option.from
+Collapse a value that may be `null`/`undefined` into an `Option`, without needing to import a separate utility.
+
+```ts
+function Option.from<T>(val: T | null | undefined): Option<NonNullable<T>>;
+```
+
+```ts
+Option.from(5); // Some(5)
+Option.from(null); // None
+Option.from(undefined); // None
 ```
 
 ### unwrap, unwrapOr, unwrapOrElse, safeUnwrap, expect

@@ -74,3 +74,17 @@ export class SomeImpl<T> {
 export function Some<T>(value: T) {
   return new SomeImpl<T>(value);
 }
+
+export const Option = {
+  /**
+   * Collapse a value that may be `null`/`undefined` into an `Option`.
+   * @param val The value to check
+   */
+  from<T>(
+    val: T | null | undefined
+  ): Option<NonNullable<T>> {
+    return val === null || val === undefined ?
+      None :
+      Some(val);
+  }
+};
