@@ -101,6 +101,19 @@ describe("Mutex", () => {
       free();
       assert.strictEqual(released, false);
     });
+
+    it("should reset the running count even when the Mutex is not locked", async() => {
+      const mu = new Mutex({ concurrency: 5 });
+
+      await mu.acquire();
+      await mu.acquire();
+      assert.strictEqual(mu.running, 2);
+      assert.strictEqual(mu.locked, false);
+
+      mu.reset();
+
+      assert.strictEqual(mu.running, 0);
+    });
   });
 
   describe("release", () => {
@@ -241,7 +254,7 @@ describe("Mutex", () => {
 
       await mu.acquire();
       setImmediate(() => {
-        mu.release().release();
+        mu.release();
         ac.abort();
       });
 
@@ -251,6 +264,82 @@ describe("Mutex", () => {
       setImmediate(() => free());
       await once(mu, MutexRelease, { signal: AbortSignal.timeout(10) });
 
+      assert.strictEqual(mu.running, 0);
+    });
+
+    it("should keep the slot of the holder when a waiting acquisition is aborted", async() => {
+      // NOTE: Forcing the event-loop to remain alive
+      const timer = setTimeout(() => void 0, 100);
+
+      try {
+        const mu = new Mutex({ concurrency: 1 });
+        const free = await mu.acquire();
+
+        await assert.rejects(mu.acquire({ signal: AbortSignal.timeout(10) }), {
+          name: "MutexCanceledError"
+        });
+
+        assert.strictEqual(mu.running, 1, "the holder is still holding its slot");
+        assert.strictEqual(mu.locked, true);
+
+        let released = false;
+        mu.once(MutexRelease, () => (released = true));
+        free();
+
+        assert.strictEqual(released, true);
+        assert.strictEqual(mu.running, 0);
+      }
+      finally {
+        clearTimeout(timer);
+      }
+    });
+
+    it("should ignore an abort landing after the slot has been handed over", async() => {
+      const mu = new Mutex({ concurrency: 1 });
+      const ac = new AbortController();
+
+      await mu.acquire();
+      const pending = mu.acquire({ signal: ac.signal });
+
+      mu.release();
+      ac.abort();
+
+      const free = await pending;
+      assert.strictEqual(mu.running, 1);
+
+      free();
+      assert.strictEqual(mu.running, 0);
+    });
+
+    it("should not release more than once when the same free is called twice", async() => {
+      let releaseCount = 0;
+      const mu = new Mutex({ concurrency: 2 });
+      mu.on(MutexRelease, () => (releaseCount++));
+
+      const free = await mu.acquire();
+      await mu.acquire();
+      assert.strictEqual(mu.running, 2);
+
+      free();
+      free();
+
+      assert.strictEqual(mu.running, 1);
+      assert.strictEqual(releaseCount, 1);
+    });
+
+    it("should unref the automatic release timer when keepReferencingTimers is disabled", async() => {
+      const mu = new Mutex({
+        concurrency: 1,
+        keepReferencingTimers: false
+      });
+
+      const free = await mu.acquire({ delayBeforeAutomaticRelease: 10 });
+      await once(mu, MutexRelease, { signal: AbortSignal.timeout(50) });
+
+      assert.strictEqual(mu.running, 0);
+
+      // NOTE: the automatic release already happened, so free() is a no-op
+      free();
       assert.strictEqual(mu.running, 0);
     });
   });
@@ -274,5 +363,24 @@ describe("MutexCanceledError", () => {
     assert.throws(() => {
       throw new MutexCanceledError("AbortSignal");
     }, { message: "Mutex Canceled (AbortSignal)" });
+  });
+
+  it("should expose the abort type as a property", () => {
+    assert.strictEqual(new MutexCanceledError().abortType, "API");
+    assert.strictEqual(new MutexCanceledError("AbortSignal").abortType, "AbortSignal");
+  });
+
+  it("should expose an abort type of AbortSignal when a waiting acquisition is aborted", async() => {
+    const mu = new Mutex({ concurrency: 1 });
+    const ac = new AbortController();
+
+    await mu.acquire();
+    const pending = mu.acquire({ signal: ac.signal });
+    ac.abort();
+
+    const error = await pending.catch((err) => err);
+
+    assert.ok(error instanceof MutexCanceledError);
+    assert.strictEqual(error.abortType, "AbortSignal");
   });
 });
