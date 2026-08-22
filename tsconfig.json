@@ -24,6 +24,9 @@
     },
     {
       "path": "./src/emitt"
+    },
+    {
+      "path": "./src/collector"
     }
   ]
 }

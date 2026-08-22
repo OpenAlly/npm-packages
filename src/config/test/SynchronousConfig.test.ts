@@ -2,7 +2,6 @@
 import { describe, before, after, it, test } from "node:test";
 import assert from "node:assert";
 import path from "node:path";
-import url from "node:url";
 import fs from "node:fs";
 import os from "node:os";
 import timers from "node:timers";
@@ -11,7 +10,7 @@ import crypto from "node:crypto";
 // Import Internal Dependencies
 import { SynchronousConfig } from "../src/index.ts";
 
-const __dirname = url.fileURLToPath(new URL(".", import.meta.url));
+const __dirname = import.meta.dirname;
 
 describe("SynchronousConfig", () => {
   // Keep the event-loop alive while running tests
