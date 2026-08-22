@@ -27,6 +27,8 @@ export interface SynchronousConfigOptions<T> {
     readFileSync: typeof nodeFs.readFileSync;
     writeFileSync: typeof nodeFs.writeFileSync;
     existsSync: typeof nodeFs.existsSync;
+    renameSync: typeof nodeFs.renameSync;
+    unlinkSync: typeof nodeFs.unlinkSync;
   };
 }
 
@@ -271,7 +273,24 @@ export class SynchronousConfig<T extends Record<string, any> = Record<string, an
     const data = this.#isTOML ?
       TOML.stringify(this[constants.SYMBOLS.payload]) :
       JSON.stringify(this[constants.SYMBOLS.payload], null, 2);
-    this.#fs.writeFileSync(this.#configFilePath, data);
+
+    // Write in a sibling temporary file then rename it, so that a concurrent reader
+    // never observe a truncated (or partially written) configuration.
+    const temporaryPath = utils.temporaryFilePath(this.#configFilePath);
+    try {
+      this.#fs.writeFileSync(temporaryPath, data);
+      this.#fs.renameSync(temporaryPath, this.#configFilePath);
+    }
+    catch (err) {
+      try {
+        this.#fs.unlinkSync(temporaryPath);
+      }
+      catch {
+        // Best-effort cleanup, the original error is the one that matters.
+      }
+
+      throw err;
+    }
   }
 
   close(): void {
@@ -285,7 +304,6 @@ export class SynchronousConfig<T extends Record<string, any> = Record<string, an
     this.#subscriptionObservers = [];
     clearInterval(this.#cleanupTimeout);
 
-    this.writeOnDisk();
     this.#configHasBeenRead = false;
 
     this.emit("close");

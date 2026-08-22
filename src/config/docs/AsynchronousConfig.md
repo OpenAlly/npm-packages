@@ -12,7 +12,7 @@ Available options are:
 | `writeOnSet` | `boolean` | `false` | Write the file on the disk after each time `.set()` is called |
 | `autoReload` | `boolean` | `false` | Setup hot reload of the configuration file |
 | `jsonSchema` | `object` | `null` | The default JSON Schema for the configuration |
-| `fs` | `FileSystem` | `fs` | The file system to use for reading and writing the configuration |
+| `fs` | `FileSystem` | `fs` | The file system to use for reading and writing the configuration (must implement `watch`, `existsSync` and the `promises` methods `readFile`, `writeFile`, `rename` and `unlink`) |
 
 > [!NOTE]
 > When no schema is provided, it will search for a file prefixed by `.schema` with the same config name.
@@ -84,6 +84,9 @@ config.set("foo", "baz");
 
 Close the configuration. It will stop the file watcher, remove subscribers and emit the `close` event.
 
+> [!IMPORTANT]
+> Closing does **not** write the configuration on the disk. Await `writeOnDisk()` first if you want to persist the in-memory payload.
+
 ### `AsynchronousConfig.payload: object`
 
 Return a deep clone of the configuration payload.
@@ -91,3 +94,5 @@ Return a deep clone of the configuration payload.
 ### `AsynchronousConfig.writeOnDisk(): Promise<void>`
 
 Write the configuration payload on the local disk.
+
+The payload is written in a sibling temporary file which is then renamed, so a concurrent reader never observe a truncated configuration. Because the watched file is replaced, the hot reload watcher (see `autoReload`) is automatically re-armed.
