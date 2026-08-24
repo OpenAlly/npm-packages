@@ -1,5 +1,11 @@
 # @openally/mutex
 
+## 4.0.0
+
+### Major Changes
+
+- [#311](https://github.com/OpenAlly/npm-packages/pull/311) [`2216a41`](https://github.com/OpenAlly/npm-packages/commit/2216a41322b85fcfb106a8b3c191a984420bce10) Thanks [@fraxken](https://github.com/fraxken)! - Enhance Mutex implementation and introduce a new built-in TaskGroup API
+
 ## 3.0.0
 
 ### Major Changes
