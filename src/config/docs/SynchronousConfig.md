@@ -12,7 +12,7 @@ Available options are:
 | `writeOnSet` | `boolean` | `false` | Write the file on the disk after each time `.set()` is called |
 | `autoReload` | `boolean` | `false` | (Unused in sync version, for API compatibility) |
 | `jsonSchema` | `object` | `null` | The default JSON Schema for the configuration |
-| `fs` | `FileSystem` | `fs` | The file system to use for reading and writing the configuration |
+| `fs` | `FileSystem` | `fs` | The file system to use for reading and writing the configuration (must implement `readFileSync`, `writeFileSync`, `existsSync`, `renameSync` and `unlinkSync`) |
 
 > [!NOTE]
 > When no schema is provided, it will search for a file suffixed by `.schema.json` with the same config name.
@@ -73,7 +73,10 @@ config.set("foo", "baz");
 
 ### `SynchronousConfig.close(): void`
 
-Close the configuration. It will remove subscribers, write the configuration to disk, and emit the `close` event.
+Close the configuration. It will remove subscribers and emit the `close` event.
+
+> [!IMPORTANT]
+> Closing does **not** write the configuration on the disk. Call `writeOnDisk()` first if you want to persist the in-memory payload.
 
 ### `SynchronousConfig.payload: object`
 
@@ -82,3 +85,5 @@ Return a deep clone of the configuration payload.
 ### `SynchronousConfig.writeOnDisk(): void`
 
 Write the configuration payload on the local disk.
+
+The payload is written in a sibling temporary file which is then renamed, so a concurrent reader never observe a truncated configuration.

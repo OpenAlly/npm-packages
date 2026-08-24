@@ -1,9 +1,12 @@
 {
-  "name": "@openally/mutex",
-  "version": "3.0.0",
-  "description": "Another Mutex/Semaphore implementation with first-class support of AbortSignal",
+  "name": "@openally/collector",
+  "version": "1.0.0",
+  "description": "Collect timings and failures of synchronous and asynchronous operations",
   "type": "module",
   "exports": "./dist/index.js",
+  "engines": {
+    "node": ">=24.x"
+  },
   "scripts": {
     "build": "tsc -b",
     "prepublishOnly": "npm run test-export",
@@ -20,12 +23,22 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/OpenAlly/npm-packages.git",
-    "directory": "src/mutex"
+    "directory": "src/collector"
   },
   "files": [
     "dist"
   ],
-  "keywords": [],
+  "keywords": [
+    "stats",
+    "statistics",
+    "metrics",
+    "collector",
+    "tracing",
+    "telemetry"
+  ],
   "author": "GENTILHOMME Thomas <gentilhomme.thomas@gmail.com>",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "@openally/emitt": "^1.0.1"
+  }
 }

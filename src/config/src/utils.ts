@@ -1,3 +1,6 @@
+// Import Node.js Dependencies
+import { randomBytes } from "node:crypto";
+
 // Import Third-party Dependencies
 import { type ErrorObject } from "ajv";
 
@@ -81,4 +84,14 @@ export function deepSet<T extends Record<string, any>>(obj: T, path: string, val
   Reflect.set(current, lastKey, value);
 
   return obj;
+}
+
+/**
+ * Build a temporary file path (sibling of the provided file).
+ *
+ * The temporary file must be located in the same directory than the final file,
+ * otherwise the rename() could cross a filesystem boundary and would no longer be atomic.
+ */
+export function temporaryFilePath(filePath: string): string {
+  return `${filePath}.${randomBytes(6).toString("hex")}.tmp`;
 }

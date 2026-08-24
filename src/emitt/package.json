@@ -8,7 +8,7 @@
     "node": ">=24.x"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "tsc -b",
     "prepublishOnly": "npm run test-export",
     "test-only": "node --test ./test/**/*.spec.ts",
     "test-export": "npm run build && attw --pack . --profile esm-only",

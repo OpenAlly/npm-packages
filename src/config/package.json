@@ -5,7 +5,7 @@
   "exports": "./dist/index.js",
   "type": "module",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc -b",
     "prepublishOnly": "npm run test-export",
     "test-only": "node --test ./test/**/*.test.ts",
     "test-export": "npm run build && attw --pack . --profile esm-only",

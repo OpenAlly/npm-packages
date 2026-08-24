@@ -24,7 +24,7 @@ export interface ConfigOptions<T> {
   writeOnSet?: boolean;
   jsonSchema?: JSONSchemaType<T> | ConfigAnySchema;
   fs?: {
-    promises: Pick<typeof nodeFs.promises, "readFile" | "writeFile">;
+    promises: Pick<typeof nodeFs.promises, "readFile" | "writeFile" | "rename" | "unlink">;
     watch: typeof nodeFs.watch;
     existsSync: typeof nodeFs.existsSync;
   };
@@ -318,9 +318,36 @@ export class AsynchronousConfig<T extends Record<string, any> = Record<string, a
     const data = this.#isTOML ?
       TOML.stringify(this[constants.SYMBOLS.payload]) :
       JSON.stringify(this[constants.SYMBOLS.payload], null, 2);
-    await this.#fs.promises.writeFile(this.#configFilePath, data);
+
+    // Write in a sibling temporary file then rename it, so that a concurrent reader
+    // never observe a truncated (or partially written) configuration.
+    const temporaryPath = utils.temporaryFilePath(this.#configFilePath);
+    try {
+      await this.#fs.promises.writeFile(temporaryPath, data);
+      await this.#fs.promises.rename(temporaryPath, this.#configFilePath);
+    }
+    catch (err) {
+      // Best-effort cleanup, the original error is the one that matters.
+      await this.#fs.promises.unlink(temporaryPath).catch(() => void 0);
+
+      throw err;
+    }
+
+    // The rename swap the watched file with a new one, hence the watcher must be
+    // re-armed otherwise it would never observe any further modification.
+    this.#rearmAutoReload();
 
     this.emit("configWritten");
+  }
+
+  #rearmAutoReload(): void {
+    if (!this.#autoReloadActivated) {
+      return;
+    }
+
+    this.#watcher.close();
+    this.#autoReloadActivated = false;
+    this.setupAutoReload();
   }
 
   #lazyWriteOnDisk(): void {
@@ -349,7 +376,6 @@ export class AsynchronousConfig<T extends Record<string, any> = Record<string, a
     this.#subscriptionObservers = [];
     clearInterval(this.#cleanupTimeout);
 
-    await this.writeOnDisk();
     this.#configHasBeenRead = false;
 
     this.emit("close");
