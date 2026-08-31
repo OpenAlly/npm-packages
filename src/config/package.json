@@ -39,8 +39,8 @@
   "author": "GENTILHOMME Thomas <gentilhomme.thomas@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "ajv": "^8.17.1",
-    "smol-toml": "^1.2.2",
+    "ajv": "8.20.0",
+    "smol-toml": "1.8.0",
     "zen-observable": "^0.10.0"
   },
   "devDependencies": {

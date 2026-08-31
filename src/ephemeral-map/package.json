@@ -30,6 +30,6 @@
   "license": "MIT",
   "dependencies": {
     "@openally/timestore": "^3.0.0",
-    "type-fest": "^5.0.1"
+    "type-fest": "5.8.0"
   }
 }
