@@ -1,5 +1,11 @@
 # @openally/config
 
+## 2.1.0
+
+### Minor Changes
+
+- [#312](https://github.com/OpenAlly/npm-packages/pull/312) [`1d46fc2`](https://github.com/OpenAlly/npm-packages/commit/1d46fc2a32a395472f65befc873fb22254b171fa) Thanks [@fraxken](https://github.com/fraxken)! - writeOnDisk() is now atomic and close() do not write configuration on the disk automatically
+
 ## 2.0.0
 
 ### Major Changes
