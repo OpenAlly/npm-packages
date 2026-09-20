@@ -50,6 +50,7 @@ type EventMap = Record<string | symbol, (...args: any[]) => void>;
 - [Emitter API](#emitter-api)
   - [Constructor](#constructor)
   - [addListener, on](#addlistener-on)
+  - [subscribe](#subscribe)
   - [once](#once)
   - [prependListener](#prependlistener)
   - [prependOnceListener](#prependoncelistener)
@@ -90,6 +91,21 @@ Register a listener for `event`. `on` is an alias of `addListener`. Warns via `c
 ```ts
 emitter.on("connect", (host) => console.log(host));
 ```
+
+### subscribe
+```ts
+subscribe<E extends keyof Events>(event: E, listener: Events[E]): () => void;
+```
+Register a listener and return an unsubscribe function. Each unsubscribe function removes only its own registration, even when the same callback is registered multiple times. Calling it again has no effect.
+
+```ts
+const unsubscribe = emitter.subscribe("connect", (host) => console.log(host));
+
+emitter.emit("connect", "localhost");
+unsubscribe();
+```
+
+The original callback can also be passed to `off()` and is returned by `listeners()`. `rawListeners()` returns the subscription's internal wrapper.
 
 ### once
 ```ts

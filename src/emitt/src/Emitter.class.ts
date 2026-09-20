@@ -119,6 +119,26 @@ export class Emitter<
     return this.addListener(event, listener);
   }
 
+  subscribe<E extends keyof Events>(
+    event: E,
+    listener: Events[E]
+  ): () => void {
+    function wrapped(...args: Parameters<Events[E]>): void {
+      listener(...args);
+    }
+    wrapped.listener = listener;
+    this.#addListener(event as string | symbol, wrapped, false);
+
+    let active = true;
+
+    return () => {
+      if (active) {
+        active = false;
+        this.#removeListener(event as string | symbol, wrapped);
+      }
+    };
+  }
+
   once<E extends keyof Events>(
     event: E,
     listener: Events[E]

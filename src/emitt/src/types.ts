@@ -3,6 +3,7 @@ export type EventMap = Record<string | symbol, (...args: any[]) => void>;
 export interface TypedEventEmitter<Events extends EventMap> {
   addListener<E extends keyof Events>(event: E, listener: Events[E]): this;
   on<E extends keyof Events>(event: E, listener: Events[E]): this;
+  subscribe<E extends keyof Events>(event: E, listener: Events[E]): () => void;
   once<E extends keyof Events>(event: E, listener: Events[E]): this;
   prependListener<E extends keyof Events>(event: E, listener: Events[E]): this;
   prependOnceListener<E extends keyof Events>(event: E, listener: Events[E]): this;
