@@ -26,6 +26,105 @@ describe("Emitter", () => {
     assert.deepStrictEqual(received, [1, "hello"]);
   });
 
+  it("subscribe() forwards arguments until unsubscribed", () => {
+    const emitter = new Emitter<Events>();
+    const received: [number, string][] = [];
+    const unsubscribe = emitter.subscribe("foo", (a, b) => {
+      received.push([a, b]);
+    });
+
+    emitter.emit("foo", 1, "hello");
+    emitter.emit("foo", 2, "world");
+    unsubscribe();
+
+    assert.strictEqual(emitter.emit("foo", 3, "ignored"), false);
+    assert.deepStrictEqual(received, [[1, "hello"], [2, "world"]]);
+  });
+
+  it("unsubscribe() removes only its own registration and is idempotent", () => {
+    const emitter = new Emitter<Events>();
+    let calls = 0;
+    const listener = () => {
+      calls++;
+    };
+    emitter.on("bar", listener);
+    const first = emitter.subscribe("bar", listener);
+    const second = emitter.subscribe("bar", listener);
+    const [regular, firstWrapper, secondWrapper] = emitter.rawListeners("bar");
+
+    second();
+    second();
+
+    assert.deepStrictEqual(emitter.rawListeners("bar"), [regular, firstWrapper]);
+    assert.notStrictEqual(firstWrapper, secondWrapper);
+    emitter.emit("bar");
+    assert.strictEqual(calls, 2);
+
+    first();
+    first();
+    assert.deepStrictEqual(emitter.rawListeners("bar"), [listener]);
+  });
+
+  it("subscribe() supports symbol events", () => {
+    const key = Symbol("change");
+    const emitter = new Emitter<{ [key]: (value: number) => void }>();
+    let received = 0;
+    const unsubscribe = emitter.subscribe(key, (value) => {
+      received = value;
+    });
+
+    emitter.emit(key, 42);
+    unsubscribe();
+
+    assert.strictEqual(received, 42);
+    assert.strictEqual(emitter.emit(key, 99), false);
+  });
+
+  it("subscriptions expose the original callback and support off()", () => {
+    const emitter = new Emitter<Events>();
+    const listener = () => void 0;
+    const unsubscribe = emitter.subscribe("bar", listener);
+
+    assert.deepStrictEqual(emitter.listeners("bar"), [listener]);
+    assert.notStrictEqual(emitter.rawListeners("bar")[0], listener);
+    emitter.off("bar", listener);
+    assert.strictEqual(emitter.listenerCount("bar"), 0);
+
+    emitter.subscribe("bar", listener);
+    unsubscribe();
+    assert.strictEqual(emitter.listenerCount("bar"), 1);
+  });
+
+  it("old unsubscribe functions leave registrations added after removeAllListeners() intact", () => {
+    const emitter = new Emitter<Events>();
+    const listener = () => void 0;
+    const unsubscribe = emitter.subscribe("bar", listener);
+
+    emitter.removeAllListeners();
+    emitter.subscribe("bar", listener);
+    unsubscribe();
+    unsubscribe();
+
+    assert.strictEqual(emitter.listenerCount("bar"), 1);
+  });
+
+  it("unsubscribe() preserves the current emission's listener snapshot", () => {
+    const emitter = new Emitter<Events>();
+    const calls: string[] = [];
+    emitter.on("bar", () => {
+      calls.push("first");
+      unsubscribe();
+    });
+    const unsubscribe = emitter.subscribe("bar", () => {
+      calls.push("second");
+    });
+
+    emitter.emit("bar");
+    emitter.emit("bar");
+
+    assert.deepStrictEqual(calls, ["first", "second", "first"]);
+  });
+
   it("should return false from emit() when there are no listeners", () => {
     const emitter = new Emitter<Events>();
     assert.strictEqual(emitter.emit("bar"), false);
