@@ -25,7 +25,8 @@
     "src/config",
     "src/event-loop-monitor",
     "src/emitt",
-    "src/collector"
+    "src/collector",
+    "src/atomic-fs"
   ],
   "license": "MIT",
   "bugs": {

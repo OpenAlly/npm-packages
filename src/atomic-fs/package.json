@@ -1,0 +1,42 @@
+{
+  "name": "@openally/atomic-fs",
+  "version": "1.0.0",
+  "description": "Crash-safe atomic file write and rename primitives with a pluggable temporary naming strategy",
+  "type": "module",
+  "exports": "./dist/index.js",
+  "engines": {
+    "node": ">=24.x"
+  },
+  "scripts": {
+    "build": "tsc -b",
+    "prepublishOnly": "npm run test-export",
+    "test-only": "node --test \"./test/**/*.spec.ts\"",
+    "test-export": "npm run build && attw --pack . --profile esm-only",
+    "test": "npm run test-export && c8 -r html npm run test-only",
+    "lint": "eslint src/**/*.ts"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org",
+    "access": "public",
+    "provenance": true
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OpenAlly/npm-packages.git",
+    "directory": "src/atomic-fs"
+  },
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "atomic",
+    "fs",
+    "filesystem",
+    "write-file",
+    "rename",
+    "durability",
+    "fsync"
+  ],
+  "author": "GENTILHOMME Thomas <gentilhomme.thomas@gmail.com>",
+  "license": "MIT"
+}
