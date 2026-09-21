@@ -44,9 +44,9 @@ describe("Emitter", () => {
   it("unsubscribe() removes only its own registration and is idempotent", () => {
     const emitter = new Emitter<Events>();
     let calls = 0;
-    const listener = () => {
+    function listener() {
       calls++;
-    };
+    }
     emitter.on("bar", listener);
     const first = emitter.subscribe("bar", listener);
     const second = emitter.subscribe("bar", listener);
@@ -67,7 +67,7 @@ describe("Emitter", () => {
 
   it("subscribe() supports symbol events", () => {
     const key = Symbol("change");
-    const emitter = new Emitter<{ [key]: (value: number) => void }>();
+    const emitter = new Emitter<{ [key]: (value: number) => void; }>();
     let received = 0;
     const unsubscribe = emitter.subscribe(key, (value) => {
       received = value;
@@ -82,7 +82,9 @@ describe("Emitter", () => {
 
   it("subscriptions expose the original callback and support off()", () => {
     const emitter = new Emitter<Events>();
-    const listener = () => void 0;
+    function listener() {
+      return void 0;
+    }
     const unsubscribe = emitter.subscribe("bar", listener);
 
     assert.deepStrictEqual(emitter.listeners("bar"), [listener]);
@@ -97,7 +99,9 @@ describe("Emitter", () => {
 
   it("old unsubscribe functions leave registrations added after removeAllListeners() intact", () => {
     const emitter = new Emitter<Events>();
-    const listener = () => void 0;
+    function listener() {
+      return void 0;
+    }
     const unsubscribe = emitter.subscribe("bar", listener);
 
     emitter.removeAllListeners();
