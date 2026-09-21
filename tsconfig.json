@@ -27,6 +27,9 @@
     },
     {
       "path": "./src/collector"
+    },
+    {
+      "path": "./src/atomic-fs"
     }
   ]
 }
