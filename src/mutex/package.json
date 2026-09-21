@@ -8,8 +8,9 @@
     "build": "tsc -b",
     "prepublishOnly": "npm run test-export",
     "test-only": "node --test ./test/**/*.spec.ts",
+    "typecheck": "tsc --noEmit -p test/tsconfig.json",
     "test-export": "npm run build && attw --pack . --profile esm-only",
-    "test": "npm run test-export && c8 -r html npm run test-only",
+    "test": "npm run test-export && npm run typecheck && c8 -r html npm run test-only",
     "lint": "eslint src/**/*.ts"
   },
   "publishConfig": {

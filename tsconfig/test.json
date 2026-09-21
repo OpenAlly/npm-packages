@@ -1,0 +1,7 @@
+{
+  "extends": "./check.json",
+  "include": [
+    "${configDir}",
+    "${configDir}/../src"
+  ]
+}
