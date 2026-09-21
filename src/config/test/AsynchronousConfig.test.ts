@@ -19,8 +19,10 @@ describe("AsynchronousConfig", () => {
   const keepAliveTimer: NodeJS.Timeout = setInterval(() => void 0, 100_000);
 
   let tempDir: string;
-  // Fixtures are copied per test file: config.close() rewrites them on disk,
-  // and test files run in parallel processes (see node --test).
+  /*
+   * Fixtures are copied per test file: config.close() rewrites them on disk,
+   * and test files run in parallel processes (see node --test).
+   */
   let fixturesDir: string;
 
   before(() => {
@@ -378,7 +380,8 @@ describe("AsynchronousConfig", () => {
         config.set("foo", 42);
       }, {
         name: "Error",
-        message: "Config.payload (setter) - AJV Validation failed with error(s) => property /foo must be string\n"
+        message: "Config.payload (setter) - AJV Validation failed with error(s) => " +
+          "property /foo must be string\n"
       });
     });
 
@@ -399,7 +402,8 @@ describe("AsynchronousConfig", () => {
         await config.read();
       }, {
         name: "Error",
-        message: "Config.payload (setter) - AJV Validation failed with error(s) => property /foo must be number\n"
+        message: "Config.payload (setter) - AJV Validation failed with error(s) => " +
+          "property /foo must be number\n"
       });
     });
 
@@ -424,7 +428,7 @@ describe("AsynchronousConfig", () => {
       assert.strictEqual(config.get("foo"), "bar");
     });
 
-    it("should create file with default payload when file does not exists and createOnNoEntry is true", async(t) => {
+    it("should create file with default payload if missing and createOnNoEntry is true", async(t) => {
       const configPath = path.join(tempDir, ".doesNotExists");
       assert(fs.existsSync(configPath) === false);
 
@@ -478,7 +482,7 @@ describe("AsynchronousConfig", () => {
   });
 
   describe("read() formats", () => {
-    test("Given TOML configuration files with and without extensions, it must successfully read their contents", async() => {
+    test("Given TOML files with and without extensions, it must read their contents", async() => {
       const cases = [
         path.join(fixturesDir, "config.toml"),
         path.join(fixturesDir, "config")
@@ -503,7 +507,7 @@ describe("AsynchronousConfig", () => {
       }
     });
 
-    test("Given a configuration file no extension (starting with a dot), it must read it with no error", async(t) => {
+    test("Given a configuration file with no extension (starting with a dot), it must read it", async(t) => {
       const config = new AsynchronousConfig(
         path.join(fixturesDir, ".dotconfig")
       );

@@ -153,8 +153,10 @@ export class AsynchronousConfig<T extends Record<string, any> = Record<string, a
     let JSONSchema: object;
     let writeOnDisk = false;
 
-    // Get and parse the JSON Configuration file (if exist, else it will throw ENOENT).
-    // If he doesn't exist we replace it by the defaultPayload or the precedent loaded payload
+    /*
+     * Get and parse the JSON Configuration file (if exist, else it will throw ENOENT).
+     * If he doesn't exist we replace it by the defaultPayload or the precedent loaded payload
+     */
     try {
       let configFileContent = await this.#fs.promises.readFile(this.#configFilePath, "utf-8");
       if (this.#isTOML === false && configFileContent.trim() === "") {
@@ -177,8 +179,10 @@ export class AsynchronousConfig<T extends Record<string, any> = Record<string, a
       writeOnDisk = true;
     }
 
-    // Get and parse the JSON Schema file (only if he exist).
-    // If he doesn't exist we replace it with a default Schema
+    /*
+     * Get and parse the JSON Schema file (only if he exist).
+     * If he doesn't exist we replace it with a default Schema
+     */
     try {
       const schemaFileContent = await this.#fs.promises.readFile(this.#configSchemaFilePath, "utf-8");
       JSONSchema = JSON.parse(schemaFileContent);
@@ -319,8 +323,10 @@ export class AsynchronousConfig<T extends Record<string, any> = Record<string, a
       TOML.stringify(this[constants.SYMBOLS.payload]) :
       JSON.stringify(this[constants.SYMBOLS.payload], null, 2);
 
-    // Write in a sibling temporary file then rename it, so that a concurrent reader
-    // never observe a truncated (or partially written) configuration.
+    /*
+     * Write in a sibling temporary file then rename it, so that a concurrent reader
+     * never observe a truncated (or partially written) configuration.
+     */
     const temporaryPath = utils.temporaryFilePath(this.#configFilePath);
     try {
       await this.#fs.promises.writeFile(temporaryPath, data);
@@ -333,8 +339,10 @@ export class AsynchronousConfig<T extends Record<string, any> = Record<string, a
       throw err;
     }
 
-    // The rename swap the watched file with a new one, hence the watcher must be
-    // re-armed otherwise it would never observe any further modification.
+    /*
+     * The rename swap the watched file with a new one, hence the watcher must be
+     * re-armed otherwise it would never observe any further modification.
+     */
     this.#rearmAutoReload();
 
     this.emit("configWritten");

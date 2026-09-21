@@ -149,8 +149,10 @@ export class SynchronousConfig<T extends Record<string, any> = Record<string, an
     let JSONSchema: object;
     let writeOnDisk = false;
 
-    // Get and parse the JSON Configuration file (if exist, else it will throw ENOENT).
-    // If it doesn't exists we replace it by the defaultPayload or the precedent loaded payload
+    /*
+     * Get and parse the JSON Configuration file (if exist, else it will throw ENOENT).
+     * If it doesn't exists we replace it by the defaultPayload or the precedent loaded payload
+     */
     try {
       let configFileContent = this.#fs.readFileSync(this.#configFilePath, "utf-8");
       if (this.#isTOML === false && configFileContent.trim() === "") {
@@ -173,8 +175,10 @@ export class SynchronousConfig<T extends Record<string, any> = Record<string, an
       writeOnDisk = true;
     }
 
-    // Get and parse the JSON Schema file (only if it exists).
-    // If he doesn't exist we replace it with a default Schema
+    /*
+     * Get and parse the JSON Schema file (only if it exists).
+     * If he doesn't exist we replace it with a default Schema
+     */
     try {
       const schemaFileContent = this.#fs.readFileSync(this.#configSchemaFilePath, "utf-8");
       JSONSchema = JSON.parse(schemaFileContent);
@@ -274,8 +278,10 @@ export class SynchronousConfig<T extends Record<string, any> = Record<string, an
       TOML.stringify(this[constants.SYMBOLS.payload]) :
       JSON.stringify(this[constants.SYMBOLS.payload], null, 2);
 
-    // Write in a sibling temporary file then rename it, so that a concurrent reader
-    // never observe a truncated (or partially written) configuration.
+    /*
+     * Write in a sibling temporary file then rename it, so that a concurrent reader
+     * never observe a truncated (or partially written) configuration.
+     */
     const temporaryPath = utils.temporaryFilePath(this.#configFilePath);
     try {
       this.#fs.writeFileSync(temporaryPath, data);

@@ -175,7 +175,7 @@ describe("Mutex", () => {
       assert.strictEqual(released, false);
     });
 
-    it("should assert that the Node.js timer behind delayBeforeAutomaticRelease options is properly cleared", async() => {
+    it("should clear the Node.js timer behind the delayBeforeAutomaticRelease option", async() => {
       let releaseCount = 0;
       const mu = new Mutex({ concurrency: 1 });
       mu.on(MutexRelease, () => (releaseCount++));
@@ -203,7 +203,7 @@ describe("Mutex", () => {
       });
     });
 
-    it("should trigger AbortSignal if the waiting promise is not resolved under the expected delay", async() => {
+    it("should trigger AbortSignal if the waiting promise is not resolved in time", async() => {
       // NOTE: Forcing the event-loop to remain alive
       const timer = setTimeout(() => void 0, 100);
 

@@ -17,8 +17,10 @@ describe("SynchronousConfig", () => {
   const keepAliveTimer = setInterval(() => void 0, 100_000);
 
   let tempDir: string;
-  // Fixtures are copied per test file: config.close() rewrites them on disk,
-  // and test files run in parallel processes (see node --test).
+  /*
+   * Fixtures are copied per test file: config.close() rewrites them on disk,
+   * and test files run in parallel processes (see node --test).
+   */
   let fixturesDir: string;
 
   before(() => {
@@ -301,7 +303,7 @@ describe("SynchronousConfig", () => {
       config.close();
     });
 
-    it("should create file with default payload when file does not exists and createOnNoEntry is true", () => {
+    it("should create file with default payload if missing and createOnNoEntry is true", () => {
       const configPath = path.join(tempDir, ".doesNotExists");
       assert(fs.existsSync(configPath) === false);
 
@@ -344,7 +346,7 @@ describe("SynchronousConfig", () => {
   });
 
   describe("read() formats", () => {
-    test("Given TOML configuration files with and without extensions, it must successfully read their contents", () => {
+    test("Given TOML files with and without extensions, it must read their contents", () => {
       const cases = [
         path.join(fixturesDir, "config.toml"),
         path.join(fixturesDir, "config")
@@ -364,7 +366,7 @@ describe("SynchronousConfig", () => {
       }
     });
 
-    test("Given a configuration file no extension (starting with a dot), it must read it with no error", () => {
+    test("Given a configuration file with no extension (starting with a dot), it must read it", () => {
       const config = new SynchronousConfig(
         path.join(fixturesDir, ".dotconfig")
       );

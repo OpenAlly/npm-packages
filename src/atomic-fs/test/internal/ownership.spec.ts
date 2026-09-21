@@ -7,6 +7,8 @@ import type { AtomicFs } from "../../src/internal/fs.ts";
 import { isOwnershipErrOk, resolveOwnership } from "../../src/internal/ownership.ts";
 
 const kStats = { mode: 0o644, uid: 501, gid: 20 };
+const kSkipOnWindows = { skip: process.platform === "win32" };
+const kOnlyOnWindows = { skip: process.platform !== "win32" };
 
 type StatFs = Pick<AtomicFs, "stat">;
 
@@ -81,13 +83,13 @@ describe("resolveOwnership", () => {
     assert.deepStrictEqual(resolved.chown, { uid: 7, gid: 8 });
   });
 
-  it("should inherit the ownership of an existing target", { skip: process.platform === "win32" }, async() => {
+  it("should inherit the ownership of an existing target", kSkipOnWindows, async() => {
     const resolved = await resolveOwnership(statsFs(kStats), "/target", {});
 
     assert.deepStrictEqual(resolved.chown, { uid: 501, gid: 20 });
   });
 
-  it("should never inherit ownership on a platform without uids", { skip: process.platform !== "win32" }, async() => {
+  it("should never inherit ownership on a platform without uids", kOnlyOnWindows, async() => {
     const resolved = await resolveOwnership(statsFs(kStats), "/target", {});
 
     assert.strictEqual(resolved.chown, null);
@@ -108,14 +110,14 @@ describe("isOwnershipErrOk", () => {
     assert.strictEqual(isOwnershipErrOk(undefined), false);
   });
 
-  it("should tolerate EPERM and EINVAL for a non-root process", { skip: process.platform === "win32" }, () => {
+  it("should tolerate EPERM and EINVAL for a non-root process", kSkipOnWindows, () => {
     const expected = !process.getuid || process.getuid() !== 0;
 
     assert.strictEqual(isOwnershipErrOk({ code: "EPERM" }), expected);
     assert.strictEqual(isOwnershipErrOk({ code: "EINVAL" }), expected);
   });
 
-  it("should tolerate EPERM and EINVAL where uids do not exist", { skip: process.platform !== "win32" }, () => {
+  it("should tolerate EPERM and EINVAL where uids do not exist", kOnlyOnWindows, () => {
     assert.strictEqual(isOwnershipErrOk({ code: "EPERM" }), true);
     assert.strictEqual(isOwnershipErrOk({ code: "EINVAL" }), true);
   });

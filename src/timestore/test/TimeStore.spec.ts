@@ -53,7 +53,7 @@ describe("TimeStore", () => {
       }
     });
 
-    it("should expire all identifiers on process 'exit' event if expireIdentifiersOnProcessExit options is enabled", async() => {
+    it("should expire all identifiers on process exit if expireIdentifiersOnProcessExit is on", async() => {
       const processExitStub = mock.method(process, "exit", () => void 0);
       const ttl = 100;
 
@@ -241,7 +241,7 @@ describe("TimeStore", () => {
       assert.ok(isMatching);
     });
 
-    it("should keep the original identifier TTL when we renew it with keepIdentifierBirthTTL equal true", async() => {
+    it("should keep the original identifier TTL on renew with keepIdentifierBirthTTL true", async() => {
       const store = new TimeStore({ ttl: 50 });
       const counter = new EventListener(store, [
         TimeStore.Renewed,
@@ -278,7 +278,7 @@ describe("TimeStore", () => {
       assert.ok(isMatching);
     });
 
-    it("should not expire an identifier with a birth TTL of zero when Renewed with keepIdentifierBirthTTL option", async() => {
+    it("should not expire a zero birth TTL identifier on renew with keepIdentifierBirthTTL", async() => {
       const ttl = 50;
       const store = new TimeStore({ ttl });
       const counter = new EventListener(store, [
@@ -321,7 +321,7 @@ describe("TimeStore", () => {
       assert.equal(store, storeBis);
     });
 
-    it("should return the instance of the class and not add identifier if the object is not extended with Symbol TSV", () => {
+    it("should return the instance and not add identifier if the object has no Symbol TSV", () => {
       const store = new TimeStore();
       store.addTsv({} as any);
 

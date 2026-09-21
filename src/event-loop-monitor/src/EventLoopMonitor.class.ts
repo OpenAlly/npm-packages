@@ -3,7 +3,6 @@ import process from "node:process";
 import {
   performance,
   monitorEventLoopDelay,
-  type IntervalHistogram,
   type EventLoopUtilization
 } from "node:perf_hooks";
 
@@ -80,7 +79,7 @@ export interface EventLoopUtilizationMetrics {
 export class EventLoopMonitor {
   static resolution = 10;
 
-  #histogram: IntervalHistogram;
+  #histogram: ReturnType<typeof monitorEventLoopDelay>;
   #elu: EventLoopUtilization;
   #memory: NodeJS.MemoryUsage = process.memoryUsage();
   #loop = {
