@@ -42,6 +42,7 @@ Click on one of the links to access the documentation of the package:
 | emitt | [@openally/emitt](./src/emitt) |
 | collector | [@openally/collector](./src/collector) |
 | atomic-fs | [@openally/atomic-fs](./src/atomic-fs) |
+| servo | [@openally/servo](./src/servo) |
 
 These packages are available in the Node Package Repository and can be easily installed with [npm](https://docs.npmjs.com/getting-started/what-is-npm) or [yarn](https://yarnpkg.com).
 ```bash
