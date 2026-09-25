@@ -30,6 +30,9 @@
     },
     {
       "path": "./src/atomic-fs"
+    },
+    {
+      "path": "./src/servo"
     }
   ]
 }

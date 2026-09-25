@@ -1,0 +1,45 @@
+{
+  "name": "@openally/servo",
+  "version": "1.0.0",
+  "description": "Zero-dependency static file and payload serving for Node.js",
+  "type": "module",
+  "exports": "./dist/index.js",
+  "engines": {
+    "node": ">=24.x"
+  },
+  "scripts": {
+    "build": "tsc -b",
+    "prepublishOnly": "npm run test-export",
+    "test-only": "node --test \"./test/**/*.spec.ts\"",
+    "typecheck": "tsc --noEmit -p test/tsconfig.json",
+    "test-export": "npm run build && attw --pack . --profile esm-only",
+    "test": "npm run test-export && npm run typecheck && c8 -r html npm run test-only",
+    "lint": "eslint src/**/*.ts"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org",
+    "access": "public",
+    "provenance": true
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OpenAlly/npm-packages.git",
+    "directory": "src/servo"
+  },
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "http",
+    "static",
+    "server",
+    "serve",
+    "sirv",
+    "middleware",
+    "etag",
+    "range"
+  ],
+  "author": "GENTILHOMME Thomas <gentilhomme.thomas@gmail.com>",
+  "license": "MIT",
+  "dependencies": {}
+}
