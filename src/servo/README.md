@@ -91,7 +91,7 @@ function catalogHandler(req, res, next) {
 - [`servo()` and `compose()`](./docs/servo.md): the middleware, its options and the resolution order.
 - [`send()`, `sendPayload()`, `sendJson()` and `allowMethods()`](./docs/send.md): response writers for an entry or an in-memory payload.
 - [`FileSystemSource` and `bytesSource()`](./docs/sources.md): where entries come from, and how to write your own source.
-- [Utilities](./docs/utilities.md): `safePath`, `decodeRequestPath`, `containedPath`, `contentType`, `parseRange`, `isFresh` and the other pure helpers.
+- [Utilities](./docs/utilities.md): `safePath`, `decodeRequestPath`, `containedPath`, `contentType`, `parseRange`, `isFresh` and the other pure helpers. The path helpers are also exported from the browser-safe `@openally/servo/paths` entry.
 
 ## Path safety
 

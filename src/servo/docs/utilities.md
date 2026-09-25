@@ -4,6 +4,14 @@ Pure helpers used by `servo()`, exported for handlers that do their own routing.
 
 ## Path safety
 
+`safePath`, `normalizePosix`, `isDotfilePath` and `decodeRequestPath`, with the `SafePath` and `PathRejection` types, are also exported from `@openally/servo/paths`. That entry imports no `node:` module, so browser bundles can use it:
+
+```ts
+import { safePath } from "@openally/servo/paths";
+```
+
+`containedPath` reads the filesystem, so only the root entry exports it.
+
 ### decodeRequestPath
 
 ```ts
