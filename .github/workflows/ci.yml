@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  changes:
+    name: Detect affected workspaces
+    runs-on: ubuntu-latest
+    outputs:
+      workspaces: ${{ steps.detect.outputs.workspaces }}
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@05e31511f85b41b11d1cf0ef85d0992719546e2c # v2.21.0
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - uses: ./.github/actions/setup
+        with:
+          install: "false"
+      - id: detect
+        run: node .github/scripts/affected-workspaces.mts
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+
+  test:
+    name: Test ${{ matrix.workspace }}
+    needs: changes
+    if: needs.changes.outputs.workspaces != '[]'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        workspace: ${{ fromJSON(needs.changes.outputs.workspaces) }}
+      fail-fast: false
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@05e31511f85b41b11d1cf0ef85d0992719546e2c # v2.21.0
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: ./.github/actions/setup
+      - name: Run tests
+        run: npm run test --if-present --workspace=${{ matrix.workspace }}
+
+  # Single status to mark as required in the branch protection rules.
+  ci-ok:
+    name: CI OK
+    if: always()
+    needs: [changes, test]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check jobs results
+        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
+        run: exit 1
