@@ -21,10 +21,11 @@ jobs:
           fetch-depth: 0
 
       - name: Setup node.js
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: ./.github/actions/setup
         with:
-          node-version: 24
           registry-url: 'https://registry.npmjs.org'
+          # dependencies are installed below, once npm has been upgraded
+          install: "false"
 
       - name: Install latest npm
         run: npm install -g npm@latest
