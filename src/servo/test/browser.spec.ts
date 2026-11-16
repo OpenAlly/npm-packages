@@ -61,7 +61,7 @@ describe("browser compatibility", () => {
     const { builtins, code } = await bundleForBrowser("@openally/servo/paths");
 
     assert.deepStrictEqual(builtins, []);
-    for (const name of ["safePath", "normalizePosix", "isDotfilePath", "decodeRequestPath"]) {
+    for (const name of ["safePath", "normalizePosix", "isDotfilePath", "decodeRequestPath", "splitTarget"]) {
       assert.match(code, new RegExp(`\\b${name}\\b`));
     }
     assert.doesNotMatch(code, /\bcontainedPath\b/);

@@ -266,6 +266,10 @@ describe("servo", () => {
       assert.throws(() => servo("dist", { single: "../index.html" }), TypeError);
       assert.throws(() => servo("dist", { single: "docs/" }), TypeError);
     });
+
+    it("should throw on a NaN maxAge when created", () => {
+      assert.throws(() => servo("dist", { maxAge: Number.NaN }), TypeError);
+    });
   });
 
   describe("dotfiles and ignore", () => {
@@ -318,6 +322,39 @@ describe("servo", () => {
       assert.strictEqual((await server.request("/about")).text, "<h1>home</h1>");
       assert.ok(!seen.includes(""));
     });
+
+    it("should reject 8.3 short names that NTFS resolves to dotfiles", async() => {
+      await using www = await createWww();
+      await using server = await serve(www.root, {}, true);
+
+      assert.strictEqual((await server.request("/GIT~1/config")).status, 403);
+      assert.strictEqual((await server.request("/ENV~1")).status, 403);
+      assert.strictEqual((await server.request("/git~1/config")).status, 403);
+    });
+
+    it("should hide ignored precompressed siblings", async() => {
+      await using www = await createWww();
+      await using server = await serve(www.root, {
+        precompressed: { brotli: true, gzip: true },
+        ignore: (path) => path.endsWith(".br")
+      });
+      const res = await server.request("/app.js", { headers: { "accept-encoding": "br, gzip" } });
+
+      assert.strictEqual(res.headers["content-encoding"], "gzip");
+      assert.strictEqual(zlib.gunzipSync(res.body).toString(), kAppJs);
+    });
+
+    it("should hide the precompressed siblings of an ignored fallback", async() => {
+      await using www = await createWww();
+      await using server = await serve(www.root, {
+        extensions: ["js"],
+        precompressed: { brotli: true, gzip: true },
+        ignore: (path) => path === "app.js"
+      });
+      const res = await server.request("/app", { headers: { "accept-encoding": "br, gzip" } });
+
+      assert.strictEqual(res.status, 404);
+    });
   });
 
   describe("headers", () => {
@@ -346,6 +383,29 @@ describe("servo", () => {
 
       assert.strictEqual(custom.headers["content-type"], "text/x-unknown; charset=utf-8");
       assert.strictEqual(json.headers["content-type"], "application/json; charset=utf-8");
+    });
+
+    it("should resolve content types from contentTypes alone without the defaults", async() => {
+      await using www = await createWww();
+      await using server = await serve(www.root, {
+        contentTypes: { ".json": "application/json" },
+        defaultContentTypes: false
+      });
+
+      const json = await server.request("/data.json");
+      const html = await server.request("/about.html");
+
+      assert.strictEqual(json.headers["content-type"], "application/json; charset=utf-8");
+      assert.strictEqual(html.headers["content-type"], "application/octet-stream");
+    });
+
+    it("should send a private max-age", async() => {
+      await using www = await createWww();
+      await using server = await serve(www.root, { maxAge: 100, private: true });
+
+      const res = await server.request("/about.html");
+
+      assert.strictEqual(res.headers["cache-control"], "private, max-age=100");
     });
 
     it("should call setHeaders with the served path", async() => {
@@ -406,6 +466,16 @@ describe("servo", () => {
       assert.strictEqual(identity.headers["content-encoding"], undefined);
       assert.strictEqual(identity.headers.vary, "Accept-Encoding");
       assert.strictEqual(identity.text, kAppJs);
+    });
+
+    it("should follow the client q-values over the brotli-first default", async() => {
+      await using www = await createWww();
+      await using server = await serve(www.root, { precompressed: { brotli: true, gzip: true } });
+
+      const res = await server.request("/app.js", { headers: { "accept-encoding": "br;q=0.5, gzip" } });
+
+      assert.strictEqual(res.headers["content-encoding"], "gzip");
+      assert.strictEqual(zlib.gunzipSync(res.body).toString(), kAppJs);
     });
 
     it("should serve the original when no sibling exists", async() => {

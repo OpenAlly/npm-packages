@@ -1,11 +1,12 @@
 // Import Internal Dependencies
-import { strongEtag } from "../http/etag.ts";
+import { contentEtag } from "../http/etag.ts";
 import type { ServoEntry, ServoSource } from "./types.ts";
 
 export interface BytesSourceOptions {
   /**
    * `"content"` adds a strong ETag hashed from the bytes, which suits stores
-   * that have no modification time.
+   * that have no modification time. The hash is cached per `Uint8Array`, so
+   * a store that returns the same array for every read hashes it once.
    * @default false
    */
   etag?: "content" | false;
@@ -27,18 +28,35 @@ export function bytesSource(
 
       return bytes === null
         ? null
-        : bytesEntry(bytes, etag === "content");
+        : bytesEntry(bytes, {
+          etag: etag === "content" ? contentEtag(bytes) : undefined
+        });
     }
   };
 }
 
+export interface BytesEntryOptions {
+  /**
+   * Used as the ETag as is. `contentEtag(bytes)` hashes one from the bytes.
+   */
+  etag?: string;
+  mtime?: Date;
+}
+
+/**
+ * Wraps bytes already in memory as a `ServoEntry`. Ranges are views over the
+ * same memory, and disposal is a no-op.
+ */
 export function bytesEntry(
   bytes: Uint8Array,
-  etag: boolean
+  options: BytesEntryOptions = {}
 ): ServoEntry {
+  const { etag, mtime } = options;
+
   return {
     size: bytes.byteLength,
-    etag: etag ? strongEtag(bytes) : undefined,
+    mtime,
+    etag,
     body(range) {
       return range === undefined
         ? bytes

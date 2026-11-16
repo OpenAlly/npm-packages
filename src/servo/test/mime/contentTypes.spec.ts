@@ -45,6 +45,46 @@ describe("contentType", () => {
     assert.strictEqual(contentType("file.gz", table), "application/x-gzip");
   });
 
+  it("should match suffixes without a leading dot", () => {
+    const table = { "-worker.js": "text/x-worker", ".js": "text/javascript" };
+
+    assert.strictEqual(contentType("app-worker.js", table), "text/x-worker; charset=utf-8");
+    assert.strictEqual(contentType("app.js", table), "text/javascript; charset=utf-8");
+    assert.strictEqual(contentType("-worker.js", table), "text/javascript; charset=utf-8");
+  });
+
+  it("should keep the first of two keys that only differ by case", () => {
+    const table = { ".JS": "text/first", ".js": "text/second" };
+
+    assert.strictEqual(contentType("APP.js", table), "text/first; charset=utf-8");
+  });
+
+  it("should match the longest suffix shorter than the name, the empty key last", () => {
+    const table = {
+      ".JS": "text/first",
+      ".js": "text/second",
+      "-worker.js": "text/x-worker",
+      ".tar.gz": "application/gzip",
+      "": "application/x-fallback"
+    };
+    const expected: Record<string, string> = {
+      "app.js": "text/first; charset=utf-8",
+      "a-worker.js": "text/x-worker; charset=utf-8",
+      "-worker.js": "text/first; charset=utf-8",
+      "x.tar.gz": "application/gzip",
+      "x.gz": "application/x-fallback",
+      README: "application/x-fallback",
+      "": "application/octet-stream",
+      ".js": "application/x-fallback"
+    };
+
+    // Twice each, so the cached compiled table answers like the first call.
+    for (const [name, mime] of Object.entries(expected)) {
+      assert.strictEqual(contentType(name, table), mime, name);
+      assert.strictEqual(contentType(name, table), mime, name);
+    }
+  });
+
   it("should keep explicit parameters from the table", () => {
     assert.strictEqual(
       contentType("a.txt", { ".txt": "text/plain; charset=latin1" }),

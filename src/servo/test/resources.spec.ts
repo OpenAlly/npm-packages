@@ -45,12 +45,19 @@ function spy(
       return {
         ...entry,
         async body(range) {
-          const stream = await entry.body(range) as Readable;
+          const body = await entry.body(range);
           streamed = true;
-          state.streams.push(stream);
-          stream.once("close", () => state.closed++);
+          // Small bodies are read in one call, which closes the handle first.
+          if (body instanceof Uint8Array) {
+            state.closed++;
 
-          return stream;
+            return body;
+          }
+
+          state.streams.push(body);
+          body.once("close", () => state.closed++);
+
+          return body;
         },
         async [Symbol.asyncDispose]() {
           // Once streamed, the stream releases the handle: disposal is a no-op.

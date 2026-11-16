@@ -90,8 +90,9 @@ function catalogHandler(req, res, next) {
 
 - [`servo()` and `compose()`](./docs/servo.md): the middleware, its options and the resolution order.
 - [`send()`, `sendPayload()`, `sendJson()` and `allowMethods()`](./docs/send.md): response writers for an entry or an in-memory payload.
-- [`FileSystemSource` and `bytesSource()`](./docs/sources.md): where entries come from, and how to write your own source.
-- [Utilities](./docs/utilities.md): `safePath`, `decodeRequestPath`, `containedPath`, `contentType`, `parseRange`, `isFresh` and the other pure helpers. The path helpers are also exported from the browser-safe `@openally/servo/paths` entry.
+- [`FileSystemSource`, `bytesSource()` and `bytesEntry()`](./docs/sources.md): where entries come from, and how to write your own source.
+- [Path utilities](./docs/paths.md): `splitTarget`, `decodeRequestPath`, `safePath`, `normalizePosix`, `isDotfilePath`, `containedPath` and `ContainedRoot`. All but the last two are also exported from the browser-safe `@openally/servo/paths` entry.
+- [HTTP utilities](./docs/utilities.md): `contentType`, `negotiateEncoding`, `acceptsEncoding`, `parseRange`, `isFresh`, `cacheControl` and `contentEtag`.
 
 ## Path safety
 
@@ -103,12 +104,12 @@ The raw `req.url` is decoded once with `decodeURIComponent` and never goes throu
 | Control characters, `%00` included | `/a/%00.txt` | 400 |
 | Absolute path or drive letter, after `\` becomes `/` | `//etc/passwd`, `/C:/win.ini` | 403 |
 | Escapes the root once normalized | `/..%2fpackage.json` | 403 |
-| `:`, trailing `.` or space, Windows device name | `/file.txt::$DATA`, `/con.txt`, `/index.html.` | 403 |
+| `:`, trailing `.` or space, Windows device name, 8.3 short name | `/file.txt::$DATA`, `/con.txt`, `/index.html.`, `/GIT~1/config` | 403 |
 | Dotfile segment, `.well-known` excepted | `/.git/config` | 404 (`dotfiles: "deny"`: 403) |
 | `ignore(path)` returns true | | 404 |
 | Real path leaves the real root (symlinks, junctions) | `/escape/secret.txt` | 404 |
 
-The Windows rules apply on every platform, so a path rejected on Windows is also rejected on Linux. The downside: a file legitimately named `a:b.txt` on Linux cannot be served. `rejectionStatus` changes the first five statuses.
+The Windows rules apply on every platform, so a path rejected on Windows is also rejected on Linux. The downside: a file legitimately named `a:b.txt` on Linux cannot be served. `rejectionStatus` changes the first five statuses. The helpers behind these checks are documented in [Path utilities](./docs/paths.md).
 
 ## HTTP behavior
 

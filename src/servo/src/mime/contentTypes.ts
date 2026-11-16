@@ -49,31 +49,107 @@ const kTextualApplicationTypes = new Set([
   "application/xml"
 ]);
 
+type ContentTypeTable = Readonly<Record<string, string>>;
+
+interface CompiledTable {
+  /** Lowercased suffix to final MIME, charset included. */
+  types: Map<string, string>;
+  /** Distinct suffix lengths, longest first. */
+  lengths: number[];
+}
+
+const kEmptyTable: ContentTypeTable = Object.freeze({});
+const kCompiled = new WeakMap<ContentTypeTable, CompiledTable>();
+const kMergedOverDefaults = new WeakMap<ContentTypeTable, CompiledTable>();
+
 /**
  * Resolves the Content-Type of `path` by longest-suffix match on its basename.
  * Textual types get `; charset=utf-8` unless the table entry already carries
  * parameters. Unknown suffixes resolve to `application/octet-stream`.
+ *
+ * The table is compiled once and cached by identity, so reuse the same object
+ * across calls and do not mutate it afterwards.
  */
 export function contentType(
   path: string,
-  table: Readonly<Record<string, string>> = DEFAULT_CONTENT_TYPES
+  table: ContentTypeTable = DEFAULT_CONTENT_TYPES
 ): string {
-  const name = basename(path).toLowerCase();
+  return lookup(compiled(table), path);
+}
 
-  let longest: string | null = null;
-  for (const suffix of Object.keys(table)) {
-    if (
-      name.length > suffix.length &&
-      name.endsWith(suffix.toLowerCase()) &&
-      (longest === null || suffix.length > longest.length)
-    ) {
-      longest = suffix;
+/**
+ * `contentType` with `overrides` merged over `DEFAULT_CONTENT_TYPES`, or
+ * alone when `defaults` is false. The merge is cached per `overrides` object.
+ * @internal
+ */
+export function resolveContentType(
+  path: string,
+  overrides: ContentTypeTable | undefined,
+  defaults = true
+): string {
+  if (!defaults) {
+    return contentType(path, overrides ?? kEmptyTable);
+  }
+  if (overrides === undefined) {
+    return contentType(path);
+  }
+
+  let table = kMergedOverDefaults.get(overrides);
+  if (table === undefined) {
+    table = compile({ ...DEFAULT_CONTENT_TYPES, ...overrides });
+    kMergedOverDefaults.set(overrides, table);
+  }
+
+  return lookup(table, path);
+}
+
+function compiled(
+  table: ContentTypeTable
+): CompiledTable {
+  let result = kCompiled.get(table);
+  if (result === undefined) {
+    result = compile(table);
+    kCompiled.set(table, result);
+  }
+
+  return result;
+}
+
+function compile(
+  table: ContentTypeTable
+): CompiledTable {
+  const types = new Map<string, string>();
+  for (const [suffix, mime] of Object.entries(table)) {
+    const key = suffix.toLowerCase();
+    // Keys that only differ by case: the first one wins.
+    if (!types.has(key)) {
+      types.set(key, withCharset(mime));
     }
   }
 
-  return longest === null
-    ? DEFAULT_CONTENT_TYPE
-    : withCharset(table[longest]);
+  const lengths = [...new Set(Array.from(types.keys(), (key) => key.length))]
+    .sort((left, right) => right - left);
+
+  return { types, lengths };
+}
+
+function lookup(
+  { types, lengths }: CompiledTable,
+  path: string
+): string {
+  const name = basename(path).toLowerCase();
+  for (const length of lengths) {
+    if (length >= name.length) {
+      continue;
+    }
+
+    const mime = types.get(name.slice(name.length - length));
+    if (mime !== undefined) {
+      return mime;
+    }
+  }
+
+  return DEFAULT_CONTENT_TYPE;
 }
 
 export function isTextual(

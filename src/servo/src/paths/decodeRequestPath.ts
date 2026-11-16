@@ -24,9 +24,16 @@ export function decodePath(
   }
 }
 
+export interface RequestTarget {
+  /** Still percent-encoded. */
+  path: string;
+  /** The query string with its leading `?`, or `""`. */
+  search: string;
+}
+
 export function splitTarget(
   target: string
-): { path: string; search: string; } {
+): RequestTarget {
   const separator = target.search(/[?#]/);
   if (separator === -1) {
     return { path: target, search: "" };

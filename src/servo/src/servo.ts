@@ -5,7 +5,8 @@ import type {
 } from "node:http";
 
 // Import Internal Dependencies
-import { acceptsEncoding } from "./http/acceptEncoding.ts";
+import { acceptedEncodings } from "./http/acceptEncoding.ts";
+import { assertCacheControlOptions } from "./http/cacheControl.ts";
 import { decodePath, splitTarget } from "./paths/decodeRequestPath.ts";
 import { isDotfilePath } from "./paths/isDotfilePath.ts";
 import { safePath, type PathRejection } from "./paths/safePath.ts";
@@ -35,7 +36,15 @@ const kEncodings = [
 
 export interface ServoOptions extends Pick<
   SendOptions,
-  "dev" | "maxAge" | "immutable" | "etag" | "lastModified" | "contentTypes" | "setHeaders"
+  | "dev"
+  | "maxAge"
+  | "immutable"
+  | "private"
+  | "etag"
+  | "lastModified"
+  | "contentTypes"
+  | "defaultContentTypes"
+  | "setHeaders"
 > {
   /**
    * URL prefix the folder is mounted under. `/assets` and `/assets/` are
@@ -88,11 +97,6 @@ export interface ServoOptions extends Pick<
   onError?: (error: unknown, req: IncomingMessage, res: ServerResponse) => void;
 }
 
-interface Encoding {
-  coding: string;
-  suffix: string;
-}
-
 interface Resolved {
   entry: ServoEntry;
   path: string;
@@ -134,10 +138,14 @@ export function servo(
     ...kDefaultRejectionStatus,
     ...rejectionStatus
   };
-  const encodings: Encoding[] = kEncodings.filter(
-    ({ option }) => precompressed[option]
+  const suffixByCoding = new Map<string, string>(
+    kEncodings
+      .filter(({ option }) => precompressed[option])
+      .map(({ coding, suffix }) => [coding, suffix])
   );
-  const sendDefaults = { ...headerOptions, vary: encodings.length > 0 };
+  const codings = [...suffixByCoding.keys()];
+  const sendDefaults = { ...headerOptions, vary: codings.length > 0 };
+  assertCacheControlOptions(headerOptions);
 
   function hiddenStatus(
     path: string
@@ -152,12 +160,23 @@ export function servo(
     return null;
   }
 
+  /**
+   * The only way to reach `source`. A hidden path answers like a miss, and so
+   * do its variants, whose own names are checked too.
+   */
   async function lookup(
     path: string,
-    accepted: Encoding[]
+    accepted: string[]
   ): Promise<Resolved | "directory" | null> {
-    for (const { coding, suffix } of accepted) {
-      const variant = await source.lookup(`${path}${suffix}`);
+    if (hiddenStatus(path) !== null) {
+      return null;
+    }
+
+    for (const coding of accepted) {
+      const variantPath = `${path}${suffixByCoding.get(coding)}`;
+      const variant = hiddenStatus(variantPath) === null
+        ? await source.lookup(variantPath)
+        : null;
       if (variant !== null && variant !== "directory") {
         return {
           entry: variant,
@@ -195,7 +214,7 @@ export function servo(
   async function resolve(
     path: string,
     hasTrailingSlash: boolean,
-    accepted: Encoding[]
+    accepted: string[]
   ): Promise<Resolved | "redirect" | null> {
     const found = hasTrailingSlash
       ? "directory"
@@ -208,10 +227,6 @@ export function servo(
     }
 
     for (const candidate of fallbackPaths(path, found === "directory", hasTrailingSlash)) {
-      if (hiddenStatus(candidate) !== null) {
-        continue;
-      }
-
       const file = await lookup(candidate, accepted);
       if (file !== null && file !== "directory") {
         return file;
@@ -275,14 +290,10 @@ export function servo(
       return;
     }
 
-    const acceptEncoding = req.headers["accept-encoding"];
-    const accepted = encodings.filter(
-      ({ coding }) => acceptsEncoding(acceptEncoding, coding)
-    );
     const resolved = await resolve(
       safe.path,
       safe.directory,
-      accepted
+      acceptedEncodings(req.headers["accept-encoding"], codings)
     );
 
     if (resolved === "redirect") {

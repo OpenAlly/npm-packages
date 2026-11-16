@@ -37,12 +37,13 @@ async function download(req, res, name) {
 | `entry` | | The `ServoEntry` to send. Required. |
 | `path` | `""` | Name used for the Content-Type lookup and passed to `setHeaders`. |
 | `contentType` | | Explicit Content-Type, skipping the lookup on `path`. |
-| `contentTypes` | | Suffix-to-MIME entries merged over [the defaults](./utilities.md#contenttype) for the lookup. |
+| `contentTypes` | | Suffix-to-MIME entries merged over [the defaults](./utilities.md#contenttype) for the lookup. The merge is cached per object, so reuse the same one. |
+| `defaultContentTypes` | `true` | `false` looks `path` up in `contentTypes` alone. |
 | `encoding` | | `Content-Encoding` of the entry bytes. |
 | `vary` | `false` | Adds `Accept-Encoding` to `Vary`, keeping the fields already there. |
 | `etag` | `true` | |
 | `lastModified` | `true` | |
-| `dev`, `maxAge`, `immutable` | | Build `Cache-Control`, see [`cacheControl`](./utilities.md#cachecontrol). |
+| `dev`, `maxAge`, `immutable`, `private` | | Build `Cache-Control`, see [`cacheControl`](./utilities.md#cachecontrol). |
 | `setHeaders` | | `(res, path, entry) => void`, runs after default headers. `Content-Length` and `Content-Range` are set later. |
 
 ### Outcomes
@@ -66,7 +67,7 @@ Headers already set on `res` are kept. The exceptions are `Content-Length`, `Con
 
 `send()` awaits `entry[Symbol.asyncDispose]()` once when it is done, whether `body()` was called or not. By then any stream returned by `body()` has ended or been destroyed. When `body()` rejects, `send()` restores the headers `res` had before the call and rejects, so the caller can answer the error on the response it handed over.
 
-Once the body is streaming, a stream error or a client abort destroys the response. `stream.pipeline` destroys the body stream too, which closes a `FileSystemSource` handle.
+Once the body is streaming, a stream error or a client abort destroys the response. `stream.pipeline` destroys the body stream too, which closes a `FileSystemSource` handle. A `Uint8Array` body is written with a single `res.end()`.
 
 ## allowMethods
 
@@ -97,7 +98,34 @@ Sends an in-memory string or `Uint8Array` through [`send()`](#send), so HEAD, by
 | `body` | | `string` (sent as UTF-8) or `Uint8Array`. Required. |
 | `contentType` | `"application/octet-stream"` | |
 | `cacheControl` | | Sent as is, replacing any `Cache-Control` already set. |
-| `etag` | `false` | Adds a strong SHA-1 ETag and answers 304 when `If-None-Match` matches it. |
+| `dev`, `maxAge`, `immutable`, `private` | | Build `Cache-Control` when `cacheControl` is not given, see [`cacheControl`](./utilities.md#cachecontrol). |
+| `etag` | `false` | `true` adds a strong SHA-1 ETag, a string is sent as the ETag as is. Either way a matching `If-None-Match` answers 304. |
+
+The SHA-1 is cached per `Uint8Array`. A payload kept in a variable and passed on every request is hashed once, while a string is encoded and hashed on every call. Do not mutate an array after it has been sent with `etag: true`.
+
+```ts
+import { allowMethods, sendPayload } from "@openally/servo";
+
+let cached: { revision: number; bytes: Uint8Array } | null = null;
+
+function catalogHandler(req, res) {
+  if (cached?.revision !== catalog.revision) {
+    cached = {
+      revision: catalog.revision,
+      bytes: new TextEncoder().encode(JSON.stringify(catalog.snapshot()))
+    };
+  }
+
+  if (allowMethods(req, res)) {
+    sendPayload(req, res, {
+      body: cached.bytes,
+      contentType: "application/json; charset=utf-8",
+      cacheControl: "no-cache",
+      etag: true
+    });
+  }
+}
+```
 
 ## sendJson
 

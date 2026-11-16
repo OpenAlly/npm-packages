@@ -46,15 +46,17 @@ http.createServer((req, res) => {
 | `lastModified` | `true` | Sends `Last-Modified` when the entry has an mtime. |
 | `maxAge` | | `Cache-Control: public, max-age=N`. No header when unset. `0` adds `must-revalidate`. |
 | `immutable` | `false` | Appends `immutable` to the `maxAge` header. |
+| `private` | `false` | Sends `private` instead of `public` in the `maxAge` header. |
 | `index` | `"index.html"` | File served for a directory, possibly nested (`"docs/index.html"`). `false` disables it. |
 | `extensions` | `["html", "htm"]` | Tried in order when the exact path misses, so `/about` finds `about.html`. |
 | `redirect` | `true` | A directory requested without a trailing slash answers 302 to the slashed URL, query string kept. |
 | `single` | `false` | SPA fallback. `true` serves `index` (or `index.html` when `index` is `false`), a string names another file. |
 | `dotfiles` | `"ignore"` | `"ignore"` answers 404, `"deny"` answers 403, `"allow"` serves them. `.well-known` at the root is always allowed. |
-| `ignore` | | `(path) => boolean`. Matching paths answer 404. Receives normalized paths without a leading slash. |
+| `ignore` | | `(path) => boolean`. Matching paths answer 404, precompressed siblings included. Receives normalized paths without a leading slash, in the case the client sent: compare case-insensitively when the filesystem is (Windows, macOS). |
 | `precompressed` | `{}` | `{ brotli?: boolean; gzip?: boolean }`. See [precompressed files](#precompressed-files). |
 | `contentTypes` | | Suffix-to-MIME entries merged over [the defaults](./utilities.md#contenttype), e.g. `{ ".ts": "text/plain" }`. |
-| `rejectionStatus` | | Overrides the status of a [path rejection](./utilities.md#safepath), e.g. `{ traversal: 404 }`. |
+| `defaultContentTypes` | `true` | `false` resolves types from `contentTypes` alone, so a suffix it does not list is sent as `application/octet-stream`. Use it to serve untrusted files without ever labelling them `text/html` or `text/javascript`. |
+| `rejectionStatus` | | Overrides the status of a [path rejection](./paths.md#safepath), e.g. `{ traversal: 404 }`. |
 | `setHeaders` | | `(res, path, entry) => void`, runs after default headers. `Content-Length` and `Content-Range` are set later. |
 | `onNoMatch` | | `(req, res) => void`, called when nothing matches, instead of `next()`. |
 | `onError` | | `(error, req, res) => void`, called on an I/O error before the headers are written, instead of an empty 500. |
@@ -63,7 +65,7 @@ http.createServer((req, res) => {
 
 1. A request outside `prefix` goes to `next()` (404 without `next`) without touching the source.
 2. A method other than GET or HEAD follows `methodNotAllowed`.
-3. The path is decoded and validated by [`decodeRequestPath` and `safePath`](./utilities.md#path-safety). A rejection answers 400 or 403.
+3. The path is decoded and validated by [`decodeRequestPath` and `safePath`](./paths.md). A rejection answers 400 or 403.
 4. A dotfile answers 404 (403 with `dotfiles: "deny"`), and so does a path matched by `ignore`.
 5. The path is resolved against the source, as described below.
 6. The entry goes through [`send()`](./send.md#send), which answers 200, 206, 304 or 416.
@@ -82,7 +84,9 @@ For a validated path `p`:
 
 ## Precompressed files
 
-With `precompressed.brotli`, a client whose `Accept-Encoding` lists `br` with a q-value above 0 gets `<file>.br` when it exists. `gzip` works the same with `.gz`, tried after brotli. The response carries `Content-Encoding` and the Content-Type of the original name. The sibling's own size and mtime make its ETag, and byte ranges apply to the compressed bytes.
+With `precompressed.brotli`, a client whose `Accept-Encoding` lists `br` with a q-value above 0 gets `<file>.br` when it exists. `gzip` works the same with `.gz`. Siblings are tried in the client's q-value order, brotli first on a tie, so `br;q=0.5, gzip` tries `.gz` first. The original is tried last. The response carries `Content-Encoding` and the Content-Type of the original name. The sibling's own size and mtime make its ETag, and byte ranges apply to the compressed bytes. A sibling hidden by `dotfiles` or `ignore` is skipped.
+
+Each sibling that does not exist costs one `open` call, so only enable the encodings your build actually emits.
 
 `Vary: Accept-Encoding` is sent on every file response once either option is on, including the ones served uncompressed.
 

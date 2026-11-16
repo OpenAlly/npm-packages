@@ -10,26 +10,68 @@ export function acceptsEncoding(
   header: string | undefined,
   coding: string
 ): boolean {
-  if (header === undefined) {
-    return false;
+  return acceptedEncodings(header, [coding]).length > 0;
+}
+
+/**
+ * Picks the coding of `codings` the header prefers: highest q-value first,
+ * then the order of `codings` on a tie. Returns `null` when none is accepted.
+ *
+ * @example negotiateEncoding("gzip, br", ["br", "gzip"]) // "br"
+ * @example negotiateEncoding("gzip, br;q=0.5", ["br", "gzip"]) // "gzip"
+ */
+export function negotiateEncoding<T extends string>(
+  header: string | undefined,
+  codings: readonly T[]
+): T | null {
+  return acceptedEncodings(header, codings)[0] ?? null;
+}
+
+/**
+ * Every coding of `codings` accepted by the header, sorted as
+ * `negotiateEncoding` would pick them. Parses the header once.
+ * @internal
+ */
+export function acceptedEncodings<T extends string>(
+  header: string | undefined,
+  codings: readonly T[]
+): T[] {
+  if (header === undefined || codings.length === 0) {
+    return [];
   }
 
-  let wildcard: number | null = null;
+  const qualities = parseQualities(header);
+  const wildcard = qualities.get("*");
+  const accepted: { coding: T; quality: number; }[] = [];
+  for (const coding of codings) {
+    const quality = qualities.get(coding.toLowerCase()) ?? wildcard ?? 0;
+    if (quality > 0) {
+      accepted.push({ coding, quality });
+    }
+  }
+
+  // Array.prototype.sort is stable, so ties keep the order of `codings`.
+  return accepted
+    .sort((left, right) => right.quality - left.quality)
+    .map(({ coding }) => coding);
+}
+
+/**
+ * Maps each lowercased token to its q-value. The first entry of a token wins.
+ */
+function parseQualities(
+  header: string
+): Map<string, number> {
+  const qualities = new Map<string, number>();
   for (const entry of header.split(",")) {
     const [name, ...parameters] = entry.split(";");
     const token = name.trim().toLowerCase();
-    if (token !== coding && token !== "*") {
-      continue;
+    if (token !== "" && !qualities.has(token)) {
+      qualities.set(token, qValue(parameters));
     }
-
-    const quality = qValue(parameters);
-    if (token === coding) {
-      return quality > 0;
-    }
-    wildcard = quality;
   }
 
-  return wildcard !== null && wildcard > 0;
+  return qualities;
 }
 
 function qValue(

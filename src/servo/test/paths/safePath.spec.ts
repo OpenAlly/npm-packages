@@ -68,7 +68,10 @@ describe("safePath", () => {
   });
 
   it("should reject Windows device names in any case and with any extension", () => {
-    for (const name of ["CON", "con", "prn", "Aux", "NUL", "com1", "COM9", "lpt1", "LPT9", "com¹"]) {
+    for (const name of [
+      "CON", "con", "prn", "Aux", "NUL", "com1", "COM9", "lpt1", "LPT9", "com¹",
+      "COM0", "lpt0", "CONIN$", "conout$"
+    ]) {
       assert.strictEqual(rejected(name), "reserved", name);
       assert.strictEqual(rejected(`${name}.txt`), "reserved", `${name}.txt`);
       assert.strictEqual(rejected(`dir/${name}.tar.gz`), "reserved", `dir/${name}.tar.gz`);
@@ -79,5 +82,20 @@ describe("safePath", () => {
     assert.strictEqual(rejected("console.txt"), null);
     assert.strictEqual(rejected("com10"), null);
     assert.strictEqual(rejected("icon.png"), null);
+    assert.strictEqual(rejected("conin.txt"), null);
+  });
+
+  it("should reject 8.3 short names, which can alias dotfiles on NTFS", () => {
+    assert.strictEqual(rejected("GIT~1/config"), "reserved");
+    assert.strictEqual(rejected("ENV~1"), "reserved");
+    assert.strictEqual(rejected("docs/PROGRA~12.TXT"), "reserved");
+    assert.strictEqual(rejected("a/b~1/c"), "reserved");
+  });
+
+  it("should accept a tilde that does not form a short name", () => {
+    assert.strictEqual(rejected("~"), null);
+    assert.strictEqual(rejected("notes~draft.txt"), null);
+    assert.strictEqual(rejected("~1a"), null);
+    assert.strictEqual(rejected("backup.tar~1.gz.old"), null);
   });
 });
