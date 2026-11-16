@@ -1,2 +1,2 @@
-export { containedPath } from "./containedPath.ts";
+export { containedPath, ContainedRoot } from "./containedPath.ts";
 export * from "./pure.ts";

@@ -3,7 +3,13 @@ import { normalizePosix } from "./normalizePosix.ts";
 
 // CONSTANTS
 const kWindowsDrive = /^[a-zA-Z]:/;
-const kWindowsDevice = /^(?:con|prn|aux|nul|com[1-9¹²³]|lpt[1-9¹²³])(?:\..*)?$/i;
+const kWindowsDevice = /^(?:con|prn|aux|nul|conin\$|conout\$|com[0-9¹²³]|lpt[0-9¹²³])(?:\..*)?$/i;
+/**
+ * An 8.3 short name such as `GIT~1` or `PROGRA~1.TXT`. NTFS opens it as the
+ * long name, which would bypass checks done on the request path (`.git` has
+ * the short name `GIT~1`, without the leading dot).
+ */
+const kShortName = /~\d+(?:\.[^.]*)?$/;
 
 export type PathRejection =
   | "invalid"
@@ -89,7 +95,8 @@ function isReservedSegment(
   return segment.includes(":") ||
     segment.endsWith(".") ||
     segment.endsWith(" ") ||
-    kWindowsDevice.test(segment);
+    kWindowsDevice.test(segment) ||
+    kShortName.test(segment);
 }
 
 function reject(

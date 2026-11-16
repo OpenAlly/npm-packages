@@ -78,6 +78,28 @@ describe("sendPayload", () => {
     assert.strictEqual(second.body.length, 0);
   });
 
+  it("should send a given ETag as is", async() => {
+    await using server = await listen((req, res) => sendPayload(req, res, {
+      body: "hello",
+      etag: "\"rev-1\""
+    }));
+    const first = await server.request("/");
+    const second = await server.request("/", { headers: { "if-none-match": "\"rev-1\"" } });
+
+    assert.strictEqual(first.headers.etag, "\"rev-1\"");
+    assert.strictEqual(second.status, 304);
+  });
+
+  it("should build Cache-Control from maxAge and private", async() => {
+    await using server = await listen((req, res) => sendPayload(req, res, {
+      body: "hello",
+      maxAge: 60,
+      private: true
+    }));
+
+    assert.strictEqual((await server.request("/")).headers["cache-control"], "private, max-age=60");
+  });
+
   it("should serve a byte range of the payload", async() => {
     await using server = await listen((req, res) => sendPayload(req, res, { body: "hello world" }));
     const res = await server.request("/", { headers: { range: "bytes=6-" } });

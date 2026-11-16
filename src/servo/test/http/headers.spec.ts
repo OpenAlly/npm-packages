@@ -3,8 +3,11 @@ import assert from "node:assert";
 import { describe, it } from "node:test";
 
 // Import Internal Dependencies
-import { cacheControl } from "../../src/index.ts";
-import { acceptsEncoding } from "../../src/http/acceptEncoding.ts";
+import {
+  acceptsEncoding,
+  cacheControl,
+  negotiateEncoding
+} from "../../src/index.ts";
 import { strongEtag, weakEtag } from "../../src/http/etag.ts";
 
 describe("cacheControl", () => {
@@ -31,6 +34,21 @@ describe("cacheControl", () => {
   it("should add must-revalidate when max-age is 0", () => {
     assert.strictEqual(cacheControl({ maxAge: 0 }), "public, max-age=0, must-revalidate");
     assert.strictEqual(cacheControl({ maxAge: -5 }), "public, max-age=0, must-revalidate");
+  });
+
+  it("should clamp max-age to 2147483648 and reject NaN", () => {
+    assert.strictEqual(cacheControl({ maxAge: Infinity }), "public, max-age=2147483648");
+    assert.strictEqual(cacheControl({ maxAge: -Infinity }), "public, max-age=0, must-revalidate");
+    assert.throws(() => cacheControl({ maxAge: Number.NaN }), TypeError);
+  });
+
+  it("should use private instead of public", () => {
+    assert.strictEqual(
+      cacheControl({ maxAge: 31536000, immutable: true, private: true }),
+      "private, max-age=31536000, immutable"
+    );
+    assert.strictEqual(cacheControl({ dev: true, private: true }), "no-cache");
+    assert.strictEqual(cacheControl({ private: true }), null);
   });
 });
 
@@ -78,5 +96,31 @@ describe("acceptsEncoding", () => {
   it("should prefer an explicit entry over the wildcard", () => {
     assert.strictEqual(acceptsEncoding("*, br;q=0", "br"), false);
     assert.strictEqual(acceptsEncoding("*;q=0, br", "br"), true);
+  });
+});
+
+describe("negotiateEncoding", () => {
+  it("should return null when nothing is accepted", () => {
+    assert.strictEqual(negotiateEncoding(undefined, ["br", "gzip"]), null);
+    assert.strictEqual(negotiateEncoding("deflate", ["br", "gzip"]), null);
+    assert.strictEqual(negotiateEncoding("br;q=0, gzip;q=0", ["br", "gzip"]), null);
+    assert.strictEqual(negotiateEncoding("br", []), null);
+  });
+
+  it("should break q-value ties with the order of codings", () => {
+    assert.strictEqual(negotiateEncoding("gzip, br", ["br", "gzip"]), "br");
+    assert.strictEqual(negotiateEncoding("gzip, br", ["gzip", "br"]), "gzip");
+    assert.strictEqual(negotiateEncoding("*", ["br", "gzip"]), "br");
+  });
+
+  it("should pick the highest q-value", () => {
+    assert.strictEqual(negotiateEncoding("gzip, br;q=0.5", ["br", "gzip"]), "gzip");
+    assert.strictEqual(negotiateEncoding("*;q=0.1, gzip;q=0.5", ["br", "gzip"]), "gzip");
+    assert.strictEqual(negotiateEncoding("*;q=0.9, gzip;q=0.5", ["br", "gzip"]), "br");
+  });
+
+  it("should match codings case-insensitively and keep the given spelling", () => {
+    assert.strictEqual(negotiateEncoding("BR", ["br"]), "br");
+    assert.strictEqual(negotiateEncoding("br", ["BR"]), "BR");
   });
 });

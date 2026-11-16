@@ -1,89 +1,8 @@
-# Utilities
+# HTTP utilities
 
-Pure helpers used by `servo()`, exported for handlers that do their own routing. None of them touch the response. Only `containedPath` touches the filesystem.
+Pure helpers used by `send()` and `servo()` to build headers and read request headers, exported for handlers that do their own routing. None of them touch the response or the filesystem. Path helpers live in [Path utilities](./paths.md).
 
-## Path safety
-
-`safePath`, `normalizePosix`, `isDotfilePath` and `decodeRequestPath`, with the `SafePath` and `PathRejection` types, are also exported from `@openally/servo/paths`. That entry imports no `node:` module, so browser bundles can use it:
-
-```ts
-import { safePath } from "@openally/servo/paths";
-```
-
-`containedPath` reads the filesystem, so only the root entry exports it.
-
-### decodeRequestPath
-
-```ts
-decodeRequestPath(target: string): string | null
-```
-
-Cuts a raw request target at the first `?` or `#` and decodes it once with `decodeURIComponent`. Returns `null` on malformed encoding such as `%E0%A4%A`.
-
-It does not use the WHATWG `URL` parser, which resolves `..` and `%2e%2e` before the caller can see them.
-
-```ts
-decodeRequestPath("/a%20b/..%2fc?x=1"); // "/a b/../c"
-decodeRequestPath("/%E0%A4%A");         // null
-```
-
-### safePath
-
-```ts
-safePath(input: string): SafePath
-
-type SafePath =
-  | { ok: true; path: string; directory: boolean }
-  | { ok: false; reason: PathRejection };
-
-type PathRejection = "invalid" | "absolute" | "traversal" | "reserved";
-```
-
-Validates a decoded path relative to the root. On success, `path` has no leading or trailing slash (`""` is the root) and `directory` is `true` for an empty input or a trailing slash.
-
-| Order | Check | Reason | `servo()` status |
-| --- | --- | --- | --- |
-| 1 | U+0000 to U+001F or U+007F | `invalid` | 400 |
-| 2 | Leading `/` or drive letter, after `\` becomes `/` | `absolute` | 403 |
-| 3 | Normalized path is `..` or starts with `../` | `traversal` | 403 |
-| 4 | A segment contains `:`, ends with `.` or a space, or is a Windows device name (`CON`, `PRN`, `AUX`, `NUL`, `COM1`-`COM9`, `LPT1`-`LPT9`, any case, any extension) | `reserved` | 403 |
-
-Inner traversal that stays inside the root is collapsed: `a/../b` becomes `b`.
-
-```ts
-safePath("docs/");           // { ok: true, path: "docs", directory: true }
-safePath("a/../b");          // { ok: true, path: "b", directory: false }
-safePath("..\\secret");      // { ok: false, reason: "traversal" }
-safePath("con.txt");         // { ok: false, reason: "reserved" }
-```
-
-### normalizePosix
-
-```ts
-normalizePosix(relative: string): string
-```
-
-Collapses `.`, `..` and empty segments without touching the filesystem. Leading `..` that cannot collapse are kept, and a trailing slash is preserved. An empty result is `"."` (or `"./"`).
-
-### isDotfilePath
-
-```ts
-isDotfilePath(path: string): boolean
-```
-
-Whether any segment starts with a dot. A leading `.well-known` segment is exempt, but a dotfile below it is not.
-
-### containedPath
-
-```ts
-containedPath(root: string, relative: string): Promise<string | null>
-```
-
-Resolves `relative` under `root` and returns its real path, or `null` when that real path leaves the real path of `root`. A missing leaf is resolved through its closest existing parent, so a path that does not exist yet can still be checked.
-
-## HTTP
-
-### contentType
+## contentType
 
 ```ts
 contentType(path: string, table?: Readonly<Record<string, string>>): string
@@ -100,7 +19,32 @@ const table = { ...DEFAULT_CONTENT_TYPES, ".tar.gz": "application/gzip" };
 contentType("a.tar.gz", table); // "application/gzip"
 ```
 
-### parseRange
+A table is compiled into a map on first use and cached by identity. Build custom tables once, outside the request handler, and do not mutate them after use.
+
+## negotiateEncoding
+
+```ts
+negotiateEncoding<T extends string>(header: string | undefined, codings: readonly T[]): T | null
+```
+
+Picks the coding of `codings` that `Accept-Encoding` prefers: highest q-value first, then the order of `codings` on a tie. An explicit entry beats `*`, and `q=0` refuses a coding. Returns `null` when none is accepted, meaning the identity encoding should be sent.
+
+```ts
+negotiateEncoding("gzip, br", ["br", "gzip"]);        // "br"
+negotiateEncoding("gzip, br;q=0.5", ["br", "gzip"]);  // "gzip"
+negotiateEncoding("*;q=0, gzip", ["br", "gzip"]);     // "gzip"
+negotiateEncoding(undefined, ["br", "gzip"]);         // null
+```
+
+## acceptsEncoding
+
+```ts
+acceptsEncoding(header: string | undefined, coding: string): boolean
+```
+
+Whether `Accept-Encoding` accepts `coding` with a q-value above 0, an explicit entry taking precedence over `*`.
+
+## parseRange
 
 ```ts
 parseRange(header: string, size: number): ByteRange | "unsatisfiable" | null
@@ -117,7 +61,7 @@ interface ByteRange { start: number; end: number } // inclusive
 | `bytes=10-5`, `bytes=1000-`, `bytes=-0` | `"unsatisfiable"` |
 | `bytes=0-1,4-5`, `items=0-1`, `bytes=x` | `null`: ignore the header and send 200 |
 
-### isFresh
+## isFresh
 
 ```ts
 isFresh(req: IncomingMessage, validators: { etag?: string; mtime?: Date }): boolean
@@ -125,10 +69,10 @@ isFresh(req: IncomingMessage, validators: { etag?: string; mtime?: Date }): bool
 
 Whether a 304 can be sent. `If-None-Match` wins when present: it matches `*` or any tag of its list, `W/` prefixes ignored. Otherwise `If-Modified-Since` matches when `mtime`, truncated to seconds, is not newer than its date.
 
-### cacheControl
+## cacheControl
 
 ```ts
-cacheControl(options: { dev?: boolean; maxAge?: number; immutable?: boolean }): string | null
+cacheControl(options: { dev?: boolean; maxAge?: number; immutable?: boolean; private?: boolean }): string | null
 ```
 
 | Options | Value |
@@ -136,5 +80,17 @@ cacheControl(options: { dev?: boolean; maxAge?: number; immutable?: boolean }): 
 | `{ dev: true }` | `no-cache` |
 | `{ maxAge: 3600 }` | `public, max-age=3600` |
 | `{ maxAge: 31536000, immutable: true }` | `public, max-age=31536000, immutable` |
+| `{ maxAge: 31536000, immutable: true, private: true }` | `private, max-age=31536000, immutable` |
 | `{ maxAge: 0 }` | `public, max-age=0, must-revalidate` |
+| `{ maxAge: Infinity }` | `public, max-age=2147483648` |
 | `{}` | `null`, no header |
+
+`maxAge` is floored and clamped to `[0, 2147483648]`, the largest value caches must accept (RFC 9111). `NaN` throws a `TypeError`, and `servo()` checks it when called rather than on each request.
+
+## contentEtag
+
+```ts
+contentEtag(bytes: Uint8Array): string
+```
+
+A strong ETag hashed from `bytes`, cached by the identity of the array: hashing the same `Uint8Array` again returns the cached tag. Do not mutate the bytes after the first call. Pass it to [`bytesEntry`](./sources.md#bytesentry) for content that has no modification time.

@@ -6,22 +6,33 @@ import type {
 } from "node:http";
 
 // Import Internal Dependencies
+import type { CacheControlOptions } from "./http/cacheControl.ts";
+import { contentEtag } from "./http/etag.ts";
 import { DEFAULT_CONTENT_TYPE } from "./mime/contentTypes.ts";
 import { send } from "./send.ts";
 import { bytesEntry } from "./sources/bytesSource.ts";
 
-export interface SendPayloadOptions {
+export interface SendPayloadOptions extends CacheControlOptions {
+  /**
+   * A `Uint8Array` reused across calls is hashed once for `etag: true`; a
+   * string is encoded and hashed on every call.
+   */
   body: string | Uint8Array;
   /**
    * @default "application/octet-stream" ("application/json; charset=utf-8" for sendJson)
    */
   contentType?: string;
+  /**
+   * Sent as is, replacing any `Cache-Control` already set. Takes precedence
+   * over `dev`, `maxAge`, `private` and `immutable`.
+   */
   cacheControl?: string;
   /**
-   * Adds a strong ETag hashed from the payload and answers 304 on a match.
+   * `true` adds a strong ETag hashed from the payload, a string is sent as the
+   * ETag as is. Either way a matching `If-None-Match` answers 304.
    * @default false
    */
-  etag?: boolean;
+  etag?: boolean | string;
 }
 
 /**
@@ -37,18 +48,27 @@ export function sendPayload(
     body,
     contentType = DEFAULT_CONTENT_TYPE,
     cacheControl,
-    etag = false
+    etag = false,
+    dev,
+    maxAge,
+    private: isPrivate,
+    immutable
   } = options;
 
   if (cacheControl !== undefined) {
     res.setHeader("Cache-Control", cacheControl);
   }
 
+  const bytes = typeof body === "string" ? Buffer.from(body) : body;
+
   return send(req, res, {
-    entry: bytesEntry(
-      typeof body === "string" ? Buffer.from(body) : body,
-      etag
-    ),
+    dev,
+    maxAge,
+    private: isPrivate,
+    immutable,
+    entry: bytesEntry(bytes, {
+      etag: etag === true ? contentEtag(bytes) : etag || undefined
+    }),
     contentType
   });
 }

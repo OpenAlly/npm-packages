@@ -12,7 +12,7 @@ import { cacheControl, type CacheControlOptions } from "./http/cacheControl.ts";
 import { ifRangeMatches, isFresh, type Validators } from "./http/conditional.ts";
 import { weakEtag } from "./http/etag.ts";
 import { parseRange, type ByteRange } from "./http/range.ts";
-import { contentType, DEFAULT_CONTENT_TYPES } from "./mime/contentTypes.ts";
+import { resolveContentType } from "./mime/contentTypes.ts";
 import type { ServoEntry } from "./sources/types.ts";
 
 // CONSTANTS
@@ -34,8 +34,15 @@ export interface SendOptions extends CacheControlOptions {
   contentType?: string;
   /**
    * Suffix-to-MIME entries merged over the defaults for the lookup on `path`.
+   * The merge is cached per object, so reuse the same one across calls.
    */
   contentTypes?: Readonly<Record<string, string>>;
+  /**
+   * `false` resolves the Content-Type from `contentTypes` alone, so any suffix
+   * missing from it is sent as `application/octet-stream`.
+   * @default true
+   */
+  defaultContentTypes?: boolean;
   encoding?: string;
   vary?: boolean;
   /**
@@ -167,10 +174,11 @@ function writeHeaders(
   } = options;
 
   const type = options.contentType ??
-    contentType(path, {
-      ...DEFAULT_CONTENT_TYPES,
-      ...options.contentTypes
-    });
+    resolveContentType(
+      path,
+      options.contentTypes,
+      options.defaultContentTypes
+    );
   setDefault(
     res,
     "Content-Type",
